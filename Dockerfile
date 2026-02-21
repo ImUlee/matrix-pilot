@@ -1,26 +1,29 @@
-# 使用轻量级 Python 镜像
+# 1. 基础镜像
 FROM python:3.11-slim
 
-# 设置工作目录
+# 2. 设置工作目录
 WORKDIR /app
 
-# 防止 Python 产生 .pyc 文件，并让日志直接输出
+# 3. 设置环境变量
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV FLASK_ENV=production
 
-# 安装运行环境
-RUN apt-get update && apt-get install -y --no-install-recommends gcc python3-dev && \
-    rm -rf /var/lib/apt/lists/*
+# 4. 安装基础依赖
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# 安装依赖
+# 5. 安装 Python 依赖
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt gunicorn
 
-# 拷贝项目文件
+# 6. 复制项目代码
 COPY . .
 
-# 暴露 5000 端口
+# 7. 暴露端口
 EXPOSE 5000
 
-# 使用 Gunicorn 运行生产环境（比 Flask 自带服务器稳得多）
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+# 8. 启动命令（使用 Gunicorn 提高并发稳定性）
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app", "--workers", "2", "--threads", "4"]

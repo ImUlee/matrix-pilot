@@ -1,8 +1,9 @@
-name: Build and Push Docker Image
+name: Build and Push MatrixPilot Image
 
 on:
   push:
-    branches: [ "main" ] # 仅在推送到 main 分支时触发
+    branches: [ "main" ] # 仅在推送到主分支时触发
+  workflow_dispatch:      # 允许手动触发构建
 
 jobs:
   build-and-push:
@@ -12,7 +13,7 @@ jobs:
       packages: write
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Log in to GitHub Container Registry
@@ -22,11 +23,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          # 镜像名称转小写处理（GHCR 要求全小写）
+          # 自动生成标签：latest 和 git-sha
           tags: |
             ghcr.io/${{ github.repository_owner }}/matrixpilot:latest
+            ghcr.io/${{ github.repository_owner }}/matrixpilot:${{ github.sha }}
