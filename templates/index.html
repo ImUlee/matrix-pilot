@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#f4f3f9" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon.png') }}">
+    <meta name="apple-mobile-web-app-title" content="MatrixPilot">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <title>MatrixPilot</title>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+    <style>
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
+        /* =========================================
+           一、 核心色彩系统
+           ========================================= */
+        :root {
+            --app-bg: #f4f3f9;
+            --card-bg: #FFFFFF;
+            --text-main: #1C1C1E;
+            --text-sub: #A8A8A8;
+            --border-color: #e5e5ea;
+            --modal-overlay: rgba(0, 0, 0, 0.5);
+            --top-blur-bg: rgba(244, 243, 249, 0.6);
+            --primary: #007AFF;
+            --danger: #FF3B30;
+            --success: #34C759;
+            --offline: #A8A8A8;
+
+            --nav-bg: rgba(69, 69, 69, 0.85); 
+            --nav-item-bg: rgba(0, 0, 0, 0.25);
+            --nav-text-normal: rgba(255, 255, 255, 0.5);
+            --nav-bg-active: rgba(255, 255, 255, 0.15);
+            --nav-text-active: #FFFFFF;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --app-bg: #000000;
+                --card-bg: #1C1C1E;
+                --text-main: #FFFFFF;
+                --border-color: #38383A;
+                --modal-overlay: rgba(0, 0, 0, 0.8);
+                --top-blur-bg: rgba(0, 0, 0, 0.6);
+                --success: #30D158;
+                --offline: #636366;
+
+                --nav-bg: rgba(118, 118, 128, 0.24);
+                --nav-item-bg: rgba(0, 0, 0, 0.2);
+                --nav-text-normal: rgba(255, 255, 255, 0.5);
+                --nav-bg-active: rgba(255, 255, 255, 0.15);
+                --nav-text-active: #FFFFFF;
+            }
+        }
+
+        /* =========================================
+           二、 布局支撑系统 (解决高度不够导致的悬浮)
+           ========================================= */
+        html { background-color: var(--app-bg); height: 100%; }
+
+        body {
+            font-family: -apple-system, "SF Pro Display", sans-serif;
+            background-color: var(--app-bg);
+            color: var(--text-main);
+            margin: 0;
+            /* 关键补丁：100.5vh 强制页面长度超过屏幕，激活 iOS 的安全区渲染逻辑 */
+            min-height: 100.5vh;
+            padding: calc(env(safe-area-inset-top) + 10px) 0 calc(100px + env(safe-area-inset-bottom)) 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* =========================================
+           三、 全局排版与 Apple Card 组件
+           ========================================= */
+        .page-header { display: flex; justify-content: space-between; align-items: center; padding: 0 16px; margin: 20px 0; min-height: 42px; }
+        .big-title { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; margin: 0; }
+        .section-header { font-size: 1.4rem; font-weight: bold; margin: 24px 16px 8px 16px; }
+
+        .apple-card { background: var(--card-bg); border-radius: 24px; box-shadow: 0 6px 20px rgba(0,0,0,0.025); margin: 0 16px 12px 16px; padding: 20px; }
+
+        .ios-input, .ios-select { background: var(--app-bg); border: none; border-radius: 12px; height: 48px; padding: 0 15px; font-size: 15px; font-weight: 600; color: var(--text-main); width: 100%; outline: none; box-sizing: border-box; -webkit-appearance: none; appearance: none;}
+        
+        /* 胶囊按钮升级 */
+        .ios-btn-primary { 
+            background: var(--primary); color: #FFF; border: none; border-radius: 50px; 
+            height: 52px; font-size: 17px; font-weight: bold; width: 100%; 
+            cursor: pointer; transition: opacity 0.2s; white-space: nowrap; 
+            display: flex; justify-content: center; align-items: center; 
+            box-shadow: 0 4px 12px rgba(0,122,255,0.15);
+        }
+        .ios-btn-primary:active { opacity: 0.8; }
+
+        /* =========================================
+           四、 顶部模糊遮罩 (Fixed)
+           ========================================= */
+        .top-blur-mask {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: calc(env(safe-area-inset-top) + 80px);
+            z-index: 9999; pointer-events: none;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.02) 0%, rgba(244, 243, 249, 0.5) 30%, rgba(244, 243, 249, 0) 100%);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%);
+            -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%);
+            opacity: 0; visibility: hidden; transition: opacity 0.3s ease;
+        }
+        .top-blur-mask.show { opacity: 1; visibility: visible; }
+
+        /* =========================================
+           五、 页面切换逻辑
+           ========================================= */
+        .page-section { display: none; }
+        .page-section.active { display: block; }
+
+        .nav-icon-pure { background: none; border: none; color: var(--text-sub); font-size: 26px; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center;}
+        .nav-icon-pure.edit-active { color: var(--primary) !important; }
+        .nav-icon-pure.delete-active { color: var(--danger) !important; }
+
+        /* =========================================
+           六、 底部胶囊导航 (物理贴合方案：彻底解决白条)
+           ========================================= */
+        .bottom-nav {
+            position: fixed; 
+            bottom: 0; left: 0; right: 0;
+            /* 严格公式：高度 = 65px + 底部安全区 */
+            height: calc(65px + env(safe-area-inset-bottom));
+            padding-bottom: env(safe-area-inset-bottom);
+            box-sizing: border-box; 
+            background: var(--nav-bg);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-top: none;
+            box-shadow: 0 -2px 15px rgba(0,0,0,0.1);
+            z-index: 1000; 
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .nav-tabs-c { display: flex; background: var(--nav-item-bg); border-radius: 50px; padding: 4px; }
+        .nav-item-c { font-size: 0.95rem; font-weight: 600; color: var(--nav-text-normal); padding: 6px 20px; border-radius: 50px; transition: 0.3s; cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+        .nav-item-c.active { background: var(--nav-bg-active); color: var(--nav-text-active); }
+
+        /* =========================================
+           七、 折叠面板与列表细节
+           ========================================= */
+        .settings-card { background: var(--card-bg); border-radius: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); overflow: hidden; margin: 0 16px 12px 16px; }
+        .settings-summary { height: 54px; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; list-style: none; outline: none; user-select: none; }
+        .settings-summary::-webkit-details-marker { display: none; }
+        .summary-title { font-size: 15px; font-weight: 500; color: var(--text-main); }
+        .summary-status { display: flex; align-items: center; gap: 8px; color: var(--text-sub); font-size: 14px; font-weight: 400; }
+        .arrow-icon { font-size: 12px; transition: transform 0.3s; opacity: 0.3; }
+        details[open] .arrow-icon { transform: rotate(180deg); }
+        
+        .details-content { padding: 0 20px 24px 20px; border-top: 0.5px solid var(--border-color); }
+        .compact-input-group { display: flex; gap: 10px; padding: 16px 0; align-items: center; }
+        .settings-input { height: 42px !important; border-radius: 12px !important; border: 1px solid var(--border-color) !important; background: var(--app-bg) !important; font-size: 15px !important; padding: 0 12px !important; flex: 1; font-weight: 600; outline: none; color: var(--text-main); box-sizing: border-box;}
+        
+        .item-row { display: flex; justify-content: space-between; align-items: center; position: relative; padding: 12px 0; min-height: 44px; box-sizing: border-box; }
+        .item-row::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 0.5px; background: var(--border-color); }
+        .item-row:last-child::after { display: none; }
+
+        .log-details-group { border-bottom: 1px solid var(--border-color); }
+        .log-details-group:last-child { border-bottom: none; }
+        .log-summary { display: flex; align-items: center; padding: 12px 0; cursor: pointer; list-style: none; outline: none; user-select: none; }
+        .log-summary::-webkit-details-marker { display: none; }
+        details[open] .log-arrow { transform: rotate(180deg); }
+
+        /* =========================================
+           八、 弹窗系统
+           ========================================= */
+        .custom-modal-overlay { 
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+            background: var(--modal-overlay); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; overscroll-behavior: contain;
+        }
+        .custom-modal-overlay.active { display: flex; opacity: 1; }
+        .pop-in { background: var(--card-bg); border-radius: 24px; width: 85%; max-width: 380px; padding: 24px; transform: scale(0.9); transition: 0.3s; box-shadow: 0 10px 40px rgba(0,0,0,0.15); box-sizing: border-box;}
+        .custom-modal-overlay.active .pop-in { transform: scale(1); }
+    </style>
+</head>
+<body>
+
+    <div id="dynamic-top-mask" class="top-blur-mask"></div>
+
+    <div id="section-overview" class="page-section active">
+        <div class="page-header"><h1 class="big-title">Today</h1></div>
+        <form action="/" method="POST">
+            <div class="apple-card">
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
+                    <div style="background: var(--app-bg); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                        <label style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-bottom: 2px;">本轮时间</label>
+                        <input type="datetime-local" id="dateInput" name="date" value="{{ now_str }}" max="2099-12-31T23:59" oninput="calculateNextRound()"
+                               style="background: transparent; border: none; width: 100%; font-size: 18px; font-weight: 800; color: var(--primary); text-align: center; outline: none; font-family: -apple-system, sans-serif; padding: 0; box-sizing: border-box;">
+                    </div>
+                    <div style="background: var(--app-bg); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                         <label style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-bottom: 2px;">下轮预计 (+{{ interval_hours }}h)</label>
+                         <div id="nextRoundText" style="font-size: 18px; font-weight: 800; color: var(--text-main); font-family: -apple-system, sans-serif;">--</div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="font-size: 12px; color: var(--text-sub); font-weight: 600; margin-left: 8px; margin-bottom: 6px; display: block;">日志分组</label>
+                    <select name="group" class="ios-select" style="height: 48px;">
+                        {% for item in items %}<option value="{{ item.name }}">{{ item.name }}</option>{% endfor %}
+                        {% if not items %}<option value="" disabled selected>请先在配置页添加</option>{% endif %}
+                    </select>
+                </div>
+                
+                <div style="margin-bottom: 4px;">
+                    <label style="font-size: 12px; color: var(--text-sub); font-weight: 600; margin-left: 8px; margin-bottom: 6px; display: block;">数量</label>
+                    <input type="number" name="quantity" class="ios-input" placeholder="输入数值" required style="height: 48px;">
+                </div>
+            </div>
+            
+            <div style="padding: 0 16px;">
+                <button type="submit" class="ios-btn-primary">
+                    <ion-icon name="add-circle" style="font-size: 22px; margin-right: 8px;"></ion-icon>
+                    保存记录
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div id="section-log" class="page-section">
+        <div class="page-header">
+            <h1 class="big-title">日志</h1>
+            <div style="display: flex; gap: 18px;">
+                <button id="btnEdit" class="nav-icon-pure" onclick="toggleMode('edit')"><ion-icon name="create-outline"></ion-icon></button>
+                <button id="btnDelete" class="nav-icon-pure" onclick="toggleMode('delete')"><ion-icon name="trash-outline"></ion-icon></button>
+            </div>
+        </div>
+        <div id="historyContainer" class="apple-card" style="padding: 0 20px;">
+            {% for record in records %}
+                {% set keys = record.data.keys() | list %}{% set values = record.data.values() | list %}
+                <details class="log-details-group">
+                    <summary class="log-summary" onclick="handleRowClick(event, '{{ record.id }}', '{{ record.raw_date }}', '{{ keys[0] }}', '{{ values[0] }}')">
+                        <div class="icon-wrapper-left" style="width:0; opacity:0; overflow:hidden; transition:0.3s;">
+                            <div style="width: 22px; height: 22px; background: var(--danger); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                                <div style="width:12px; height:2px; background:white;"></div>
+                            </div>
+                        </div>
+                        
+                        <div style="flex: 1; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: bold; font-size: 17px;">{{ keys[0] }}</div>
+                                {% if record.next_time and record.next_time != '--' %}
+                                    {% if record.next_time > current_time %}
+                                        <div style="font-size: 12px; color: var(--success); font-weight: 600; margin-top: 2px;">预计下轮：{{ record.next_time }}</div>
+                                    {% else %}
+                                        <div style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-top: 2px;">本轮结束：{{ record.date }}</div>
+                                    {% endif %}
+                                {% else %}
+                                    <div style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-top: 2px;">本轮结束：{{ record.date }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="font-size: 22px; font-weight: 800; color: var(--primary); font-family: ui-rounded, sans-serif;">{{ values[0] }}</div>
+                                <div class="icon-wrapper-right" style="width: 0; opacity: 0; overflow: hidden; transition: 0.3s;">
+                                    <ion-icon name="create" style="font-size: 20px; color: var(--primary); margin-left: 8px;"></ion-icon>
+                                </div>
+                                <ion-icon name="chevron-down-outline" class="log-arrow" style="font-size: 18px; color: #C7C7CC; transition: 0.3s;"></ion-icon>
+                            </div>
+                        </div>
+                    </summary>
+                    
+                    <div style="padding: 0 0 16px 0;">
+                        <div style="background: var(--app-bg); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                                <span style="color: var(--text-sub);">本轮分组</span><span style="font-weight: 600;">{{ keys[0] }}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                                <span style="color: var(--text-sub);">本轮产出</span><span style="font-weight: 600; font-family: ui-rounded, sans-serif; color: var(--primary);">{{ values[0] }}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                                <span style="color: var(--text-sub);">结束时间</span><span style="font-weight: 600;">{{ record.date }}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                                <span style="color: var(--text-sub);">预计下轮</span><span style="font-weight: 600; color: var(--primary);">{{ record.next_time if record.next_time and record.next_time != '--' else '暂无' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+            {% else %}
+                <div style="text-align: center; padding: 40px 0; color: var(--text-sub);">暂无日志数据</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="section-settings" class="page-section">
+        <div class="page-header"><h1 class="big-title">配置</h1></div>
+        
+        <div class="section-header">记录与周期</div>
+        <div style="display: flex; flex-direction: column; gap: 0;">
+            <details class="settings-card">
+                <summary class="settings-summary"><div class="summary-title">管理日志分组</div><div class="summary-status"><span>{{ items|length }} 个分组</span><span class="arrow-icon">▼</span></div></summary>
+                <div class="details-content">
+                    <form action="/settings" method="POST" class="compact-input-group">
+                        <input type="hidden" name="action" value="add_item"><input type="text" name="name" placeholder="新分组名称" required class="settings-input">
+                        <button type="submit" style="background:var(--primary); color:white; border:none; border-radius:12px; padding:0 15px; height:42px; font-weight:bold; cursor:pointer;">添加</button>
+                    </form>
+                    <div style="background: var(--app-bg); border-radius: 15px; overflow: hidden; padding: 0 16px;">
+                        {% for item in items %}
+                        <div class="item-row">
+                            <span class="fw-bold" style="font-size: 15px;">{{ item.name }}</span>
+                            <form action="/settings" method="POST" onsubmit="return confirm('确定删除？');" style="margin: 0;">
+                                <input type="hidden" name="action" value="delete_item"><input type="hidden" name="id" value="{{ item.id }}">
+                                <button type="submit" style="background:none; border:none; color: #FF3B30; font-size: 24px; display: flex; padding: 0; cursor:pointer;"><ion-icon name="remove-circle"></ion-icon></button>
+                            </form>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </details>
+            <details class="settings-card">
+                <summary class="settings-summary"><div class="summary-title">下轮时间周期</div><div class="summary-status"><span style="color: #007AFF; font-weight: 800;">{{ interval_hours }}h</span><span class="arrow-icon">▼</span></div></summary>
+                <div class="details-content">
+                    <form action="/settings" method="POST" class="compact-input-group">
+                        <input type="hidden" name="action" value="update_interval"><input type="number" name="interval_hours" value="{{ interval_hours }}" required class="settings-input">
+                        <button type="submit" style="background:var(--primary); color:white; border:none; border-radius:12px; padding:0 15px; height:42px; font-weight:bold; cursor:pointer;">保存周期</button>
+                    </form>
+                </div>
+            </details>
+        </div>
+
+        <div class="section-header" style="margin-top: 12px;">通知服务</div>
+        <details class="settings-card">
+            <summary class="settings-summary"><div class="summary-title">Bark 推送配置</div><div class="summary-status"><span>{% if bark_url %}已配置{% else %}未配置{% endif %}</span><span class="arrow-icon">▼</span></div></summary>
+            <div class="details-content">
+                <form action="/settings" method="POST" style="display:flex; flex-direction:column; gap:12px; padding:16px 0;">
+                    <input type="hidden" name="action" value="update_bark">
+                    
+                    <label style="font-size:12px; color:var(--text-sub); font-weight:600;">Bark API 地址</label>
+                    <input type="text" name="bark_url" value="{{ bark_url or '' }}" placeholder="https://api.day.app/Key/" class="ios-input" style="background:var(--app-bg);">
+                    
+                    <label style="font-size:12px; color:var(--text-sub); font-weight:600;">推送标题 (支持 {group}, {time})</label>
+                    <input type="text" name="bark_title" value="{{ bark_title or 'MatrixPilot 提醒' }}" class="ios-input" style="background:var(--app-bg);">
+                    
+                    <label style="font-size:12px; color:var(--text-sub); font-weight:600;">推送内容 (支持 {group}, {time})</label>
+                    <textarea name="bark_body" class="ios-input" style="background:var(--app-bg); height:80px; padding:12px; resize:none; line-height:1.4;">{{ bark_body or '分组【{group}】预计下轮时间已到！' }}</textarea>
+                    
+                    <button type="submit" class="ios-btn-primary" style="height:44px; font-size:15px; margin-top:8px;">保存推送配置</button>
+                </form>
+            </div>
+        </details>
+    </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-tabs-c">
+            <a class="nav-item-c active" onclick="switchTab('overview', this)">总览</a>
+            <a class="nav-item-c" onclick="switchTab('log', this)">日志</a>
+            <a class="nav-item-c" onclick="switchTab('settings', this)">配置</a>
+        </div>
+    </nav>
+
+    <div class="custom-modal-overlay" id="editModalOverlay" onclick="closeModal()">
+        <div class="pop-in" onclick="event.stopPropagation()">
+            <div style="display:flex; justify-content:space-between; margin-bottom:24px; align-items: center;">
+                <h5 style="font-weight:bold; margin:0; font-size: 20px;">修改数据</h5>
+                <ion-icon name="close-circle" style="font-size:28px; color:var(--text-sub); cursor:pointer;" onclick="closeModal()"></ion-icon>
+            </div>
+            <form id="editForm" method="POST">
+                <input type="hidden" id="modalKey" name="key">
+                <div style="margin-bottom:16px;">
+                    <label style="font-size:12px; color:var(--text-sub); font-weight: 600; display: block; margin-bottom: 6px;">日期时间</label>
+                    <input type="datetime-local" id="modalDate" name="date" class="ios-input" style="height: 48px; width: 100%; border: 1px solid var(--border-color);" max="2099-12-31T23:59">
+                </div>
+                <div style="margin-bottom:24px;">
+                    <label style="font-size:12px; color:var(--text-sub); font-weight: 600; display: block; margin-bottom: 6px;">数值</label>
+                    <input type="number" id="modalValue" name="value" class="ios-input" style="height: 48px; width: 100%; border: 1px solid var(--border-color);">
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" class="ios-btn-primary" style="background: transparent; color: var(--primary); border: 1.5px solid var(--primary); height: 52px; box-shadow: none;" onclick="closeModal()">取消</button>
+                    <button type="submit" class="ios-btn-primary" style="height: 52px;">保存修改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <form id="globalDeleteForm" method="POST" style="display:none;"></form>
+
+    <script>
+        const topMask = document.getElementById('dynamic-top-mask');
+        if (topMask) {
+            window.addEventListener('scroll', () => {
+                const st = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                if (st > 15) {
+                    topMask.classList.add('show');
+                } else {
+                    topMask.classList.remove('show');
+                }
+            }, { passive: true });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const activeTab = urlParams.get('tab');
+            if (activeTab) {
+                const tabItems = document.querySelectorAll('.nav-item-c');
+                let targetEl = tabItems[0];
+                if (activeTab === 'log') targetEl = tabItems[1];
+                if (activeTab === 'settings') targetEl = tabItems[2];
+                switchTab(activeTab, targetEl);
+            }
+            calculateNextRound();
+        });
+
+        function switchTab(id, el) {
+            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item-c').forEach(t => t.classList.remove('active'));
+            document.getElementById('section-' + id).classList.add('active');
+            el.classList.add('active');
+            window.scrollTo(0, 0);
+            const url = new URL(window.location);
+            url.searchParams.set('tab', id);
+            window.history.replaceState({}, '', url);
+        }
+
+        const intervalHours = parseInt("{{ interval_hours }}") || 72;
+        function formatDT(d) {
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+        }
+        function calculateNextRound() {
+            const el = document.getElementById('dateInput');
+            if(!el) return;
+            const val = el.value;
+            if (val) {
+                const parts = val.split('-');
+                if (parts[0].length > 4) el.value = val.replace(parts[0], parts[0].substring(0,4));
+                const next = new Date(new Date(el.value).getTime() + (intervalHours * 3600000));
+                if (!isNaN(next)) document.getElementById('nextRoundText').innerText = formatDT(next);
+            }
+        }
+
+        let mode = 'normal';
+        function toggleMode(t) {
+            mode = (mode === t) ? 'normal' : t;
+            document.getElementById('btnEdit').classList.toggle('edit-active', mode === 'edit');
+            document.getElementById('btnDelete').classList.toggle('delete-active', mode === 'delete');
+            document.querySelectorAll('.icon-wrapper-left').forEach(i => {
+                i.style.width = (mode === 'delete') ? '34px' : '0';
+                i.style.opacity = (mode === 'delete') ? '1' : '0';
+            });
+            document.querySelectorAll('.icon-wrapper-right').forEach(i => {
+                i.style.width = (mode === 'edit') ? '28px' : '0';
+                i.style.opacity = (mode === 'edit') ? '1' : '0';
+            });
+        }
+
+        function handleRowClick(event, id, date, key, val) {
+            if (mode === 'edit') {
+                event.preventDefault(); 
+                document.getElementById('modalDate').value = date;
+                document.getElementById('modalValue').value = val;
+                document.getElementById('editForm').action = '/edit/' + id;
+                document.getElementById('editModalOverlay').style.display = 'flex';
+                setTimeout(() => document.getElementById('editModalOverlay').classList.add('active'), 10);
+            } else if (mode === 'delete') {
+                event.preventDefault(); 
+                if (confirm('⚠️ 确定要彻底删除这条日志记录吗？')) {
+                    const f = document.getElementById('globalDeleteForm');
+                    f.action = '/delete_record/' + id; f.submit();
+                }
+            }
+        }
+        function closeModal() {
+            document.getElementById('editModalOverlay').classList.remove('active');
+            setTimeout(() => document.getElementById('editModalOverlay').style.display = 'none', 200);
+        }
+    </script>
+</body>
+</html>

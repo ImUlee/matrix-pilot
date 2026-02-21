@@ -1,0 +1,10 @@
+{
+    "items": [
+        {
+            "id": 1,
+            "name": "派派"
+        }
+    ],
+    "interval_hours": 72,
+    "bark_url": ""
+}

@@ -1,21 +1,26 @@
-# 使用超轻量级 Nginx 镜像
-FROM nginx:alpine
+# 使用轻量级 Python 镜像
+FROM python:3.11-slim
 
 # 设置工作目录
-WORKDIR /usr/share/nginx/html
+WORKDIR /app
 
-# 清除默认静态文件
-RUN rm -rf ./*
+# 防止 Python 产生 .pyc 文件，并让日志直接输出
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# 复制我们的项目文件到镜像中
-COPY index.html .
-COPY manifest.json .
-COPY sw.js .
-# 如果你有图标文件夹，取消下面这行的注释
-# COPY icons/ ./icons/
+# 安装运行环境
+RUN apt-get update && apt-get install -y --no-install-recommends gcc python3-dev && \
+    rm -rf /var/lib/apt/lists/*
 
-# 暴露 80 端口
-EXPOSE 80
+# 安装依赖
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt gunicorn
 
-# 启动 Nginx
-CMD ["nginx", "-g", "daemon off;"]
+# 拷贝项目文件
+COPY . .
+
+# 暴露 5000 端口
+EXPOSE 5000
+
+# 使用 Gunicorn 运行生产环境（比 Flask 自带服务器稳得多）
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
