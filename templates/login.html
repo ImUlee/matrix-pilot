@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#f4f3f9" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+    <title>登录 - MatrixPilot</title>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon.png') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+
+    <style>
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+        :root {
+            --app-bg: #f4f3f9; --card-bg: #FFFFFF; --text-main: #1C1C1E; --text-sub: #A8A8A8;
+            --primary: #007AFF; --danger: #FF3B30;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root { --app-bg: #000000; --card-bg: #1C1C1E; --text-main: #FFFFFF; }
+        }
+        body {
+            font-family: -apple-system, "SF Pro Display", sans-serif;
+            background-color: var(--app-bg); color: var(--text-main); margin: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; padding: 20px;
+            -webkit-font-smoothing: antialiased;
+        }
+        .login-card {
+            background: var(--card-bg); border-radius: 24px; padding: 40px 24px;
+            width: 100%; max-width: 380px; box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .icon-container {
+            width: 72px; height: 72px; background: var(--primary); color: white;
+            border-radius: 18px; display: flex; align-items: center; justify-content: center;
+            font-size: 36px; margin: 0 auto 20px auto; box-shadow: 0 8px 24px rgba(0,122,255,0.3);
+        }
+        h1 { margin: 0 0 8px 0; font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+        p { color: var(--text-sub); font-size: 14px; margin: 0 0 32px 0; }
+        .ios-input {
+            background: var(--app-bg); border: 1px solid var(--border-color); border-radius: 12px;
+            height: 52px; padding: 0 16px; font-size: 16px; font-weight: 600; color: var(--text-main);
+            width: 100%; outline: none; margin-bottom: 24px; text-align: center; letter-spacing: 0.2em;
+        }
+        .ios-input:focus { border-color: var(--primary); }
+        .ios-btn-primary { 
+            background: var(--primary); color: #FFF; border: none; border-radius: 50px; 
+            height: 52px; font-size: 17px; font-weight: bold; width: 100%; 
+            display: flex; justify-content: center; align-items: center; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,122,255,0.15); transition: opacity 0.2s;
+        }
+        .ios-btn-primary:active { opacity: 0.8; }
+        .error-msg { color: var(--danger); font-size: 13px; margin-top: -12px; margin-bottom: 20px; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="icon-container">
+            <ion-icon name="shield-checkmark"></ion-icon>
+        </div>
+        <h1>MatrixPilot</h1>
+        <p>请输入安全访问密码</p>
+        
+        <form action="/login" method="POST">
+            <input type="password" name="pin" class="ios-input" placeholder="••••••" required autofocus>
+            
+            {% if error %}
+            <div class="error-msg"><ion-icon name="warning" style="vertical-align: text-bottom; margin-right: 4px;"></ion-icon>{{ error }}</div>
+            {% endif %}
+            
+            <button type="submit" class="ios-btn-primary">
+                <ion-icon name="log-in-outline" style="font-size: 22px; margin-right: 8px;"></ion-icon>
+                解锁应用
+            </button>
+        </form>
+    </div>
+</body>
+</html>

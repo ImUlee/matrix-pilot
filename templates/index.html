@@ -27,11 +27,18 @@
             --text-sub: #A8A8A8;
             --border-color: #e5e5ea;
             --modal-overlay: rgba(0, 0, 0, 0.5);
-            --top-blur-bg: rgba(244, 243, 249, 0.6);
+            
+            --top-blur-bg: rgba(244, 243, 249, 0.75);
+            
             --primary: #007AFF;
+            --primary-shadow: rgba(0, 122, 255, 0.15);
+            
             --danger: #FF3B30;
             --success: #34C759;
             --offline: #A8A8A8;
+
+            --ios-orange: #FF9500;
+            --ios-purple: #AF52DE;
 
             --nav-bg: rgba(69, 69, 69, 0.85); 
             --nav-item-bg: rgba(0, 0, 0, 0.25);
@@ -47,9 +54,17 @@
                 --text-main: #FFFFFF;
                 --border-color: #38383A;
                 --modal-overlay: rgba(0, 0, 0, 0.8);
-                --top-blur-bg: rgba(0, 0, 0, 0.6);
+                
+                --top-blur-bg: rgba(0, 0, 0, 0.75);
+                
+                --primary: #0A66C2; 
+                --primary-shadow: rgba(0, 0, 0, 0.3);
+                
                 --success: #30D158;
                 --offline: #636366;
+
+                --ios-orange: #FF9F0A;
+                --ios-purple: #BF5AF2;
 
                 --nav-bg: rgba(118, 118, 128, 0.24);
                 --nav-item-bg: rgba(0, 0, 0, 0.2);
@@ -60,7 +75,7 @@
         }
 
         /* =========================================
-           二、 布局支撑系统 (解决高度不够导致的悬浮)
+           二、 布局支撑与全局缩放框架
            ========================================= */
         html { background-color: var(--app-bg); height: 100%; }
 
@@ -69,50 +84,106 @@
             background-color: var(--app-bg);
             color: var(--text-main);
             margin: 0;
-            /* 关键补丁：100.5vh 强制页面长度超过屏幕，激活 iOS 的安全区渲染逻辑 */
             min-height: 100.5vh;
             padding: calc(env(safe-area-inset-top) + 10px) 0 calc(100px + env(safe-area-inset-bottom)) 0;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* =========================================
-           三、 全局排版与 Apple Card 组件
-           ========================================= */
-        .page-header { display: flex; justify-content: space-between; align-items: center; padding: 0 16px; margin: 20px 0; min-height: 42px; }
-        .big-title { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; margin: 0; }
-        .section-header { font-size: 1.4rem; font-weight: bold; margin: 24px 16px 8px 16px; }
+        .scale-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 15px; 
+            box-sizing: border-box;
+            transform-origin: top center;
+            width: 100%;
+            transition: transform 0.3s ease;
+        }
 
-        .apple-card { background: var(--card-bg); border-radius: 24px; box-shadow: 0 6px 20px rgba(0,0,0,0.025); margin: 0 16px 12px 16px; padding: 20px; }
+        @media (max-width: 768px) {
+            .scale-container {
+                transform: scale(0.96);
+            }
+        }
+
+        /* =========================================
+           三、 全局排版与常规组件 (全面扁平化去阴影)
+           ========================================= */
+        .page-header { display: flex; justify-content: space-between; align-items: center; padding: 0; margin: 20px 0; min-height: 42px; }
+        /* 标题字重瘦身：800 -> 700 */
+        .big-title { font-size: 34px; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+        .section-header { font-size: 1.2rem; font-weight: bold; margin: 24px 0 8px 0; }
+
+        /* 卡片去阴影，纯粹依靠底色区分 */
+        .apple-card { background: var(--card-bg); border-radius: 24px; box-shadow: none; margin: 0 0 12px 0; padding: 20px; }
 
         .ios-input, .ios-select { background: var(--app-bg); border: none; border-radius: 12px; height: 48px; padding: 0 15px; font-size: 15px; font-weight: 600; color: var(--text-main); width: 100%; outline: none; box-sizing: border-box; -webkit-appearance: none; appearance: none;}
         
-        /* 胶囊按钮升级 */
         .ios-btn-primary { 
-            background: var(--primary); color: #FFF; border: none; border-radius: 50px; 
-            height: 52px; font-size: 17px; font-weight: bold; width: 100%; 
+            background: var(--primary); color: #FFF; border: none; border-radius: 30px; 
+            height: 52px; font-size: 14px; font-weight: 500; width: 100%; 
             cursor: pointer; transition: opacity 0.2s; white-space: nowrap; 
             display: flex; justify-content: center; align-items: center; 
-            box-shadow: 0 4px 12px rgba(0,122,255,0.15);
+            box-shadow: 0 4px 12px var(--primary-shadow);
         }
         .ios-btn-primary:active { opacity: 0.8; }
 
         /* =========================================
-           四、 顶部模糊遮罩 (Fixed)
+           四、 数据双卡模块规范 (Highlight Cards Spec)
+           ========================================= */
+        .hl-card { 
+            background: var(--card-bg); 
+            border-radius: 24px; 
+            padding: 16px 12px; 
+            height: 110px; 
+            /* 完全去阴影 */
+            box-shadow: none; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;  
+            justify-content: center; 
+            transition: background-color 0.3s; 
+        }
+        .hl-num { 
+            font-size: 2.4rem; 
+            /* 数字字重瘦身：800 -> 700 */
+            font-weight: 700; 
+            line-height: 1; 
+            margin-bottom: 6px;
+            font-family: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; 
+        }
+        .hl-label {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            font-weight: 500;
+        }
+
+        .hl-row {
+            display: flex;
+            gap: 8px;
+            padding: 0;
+            margin-bottom: 8px; 
+        }
+        .hl-col-6 {
+            flex: 1;
+        }
+
+        /* =========================================
+           五、 顶部模糊遮罩 
            ========================================= */
         .top-blur-mask {
             position: fixed; top: 0; left: 0; right: 0;
             height: calc(env(safe-area-inset-top) + 80px);
             z-index: 9999; pointer-events: none;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.02) 0%, rgba(244, 243, 249, 0.5) 30%, rgba(244, 243, 249, 0) 100%);
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%);
-            -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%);
+            background: var(--top-blur-bg);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%);
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%);
             opacity: 0; visibility: hidden; transition: opacity 0.3s ease;
         }
         .top-blur-mask.show { opacity: 1; visibility: visible; }
 
         /* =========================================
-           五、 页面切换逻辑
+           六、 页面切换逻辑
            ========================================= */
         .page-section { display: none; }
         .page-section.active { display: block; }
@@ -122,19 +193,19 @@
         .nav-icon-pure.delete-active { color: var(--danger) !important; }
 
         /* =========================================
-           六、 底部胶囊导航 (物理贴合方案：彻底解决白条)
+           七、 底部胶囊导航
            ========================================= */
         .bottom-nav {
             position: fixed; 
             bottom: 0; left: 0; right: 0;
-            /* 严格公式：高度 = 65px + 底部安全区 */
             height: calc(65px + env(safe-area-inset-bottom));
             padding-bottom: env(safe-area-inset-bottom);
             box-sizing: border-box; 
             background: var(--nav-bg);
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border-top: none;
-            box-shadow: 0 -2px 15px rgba(0,0,0,0.1);
+            /* 底部导航去悬浮感：用0.5px的极细边框代替投影 */
+            border-top: 0.5px solid var(--border-color);
+            box-shadow: none;
             z-index: 1000; 
             display: flex; justify-content: center; align-items: center;
         }
@@ -144,9 +215,10 @@
         .nav-item-c.active { background: var(--nav-bg-active); color: var(--nav-text-active); }
 
         /* =========================================
-           七、 折叠面板与列表细节
+           八、 折叠面板与列表细节
            ========================================= */
-        .settings-card { background: var(--card-bg); border-radius: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); overflow: hidden; margin: 0 16px 12px 16px; }
+        /* 配置卡片去阴影 */
+        .settings-card { background: var(--card-bg); border-radius: 18px; box-shadow: none; overflow: hidden; margin: 0 0 12px 0; }
         .settings-summary { height: 54px; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; list-style: none; outline: none; user-select: none; }
         .settings-summary::-webkit-details-marker { display: none; }
         .summary-title { font-size: 15px; font-weight: 500; color: var(--text-main); }
@@ -169,13 +241,14 @@
         details[open] .log-arrow { transform: rotate(180deg); }
 
         /* =========================================
-           八、 弹窗系统
+           九、 弹窗系统
            ========================================= */
         .custom-modal-overlay { 
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
             background: var(--modal-overlay); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; overscroll-behavior: contain;
         }
         .custom-modal-overlay.active { display: flex; opacity: 1; }
+        /* 弹窗是全屏唯一需要保留阴影的元素（以体现高度层级） */
         .pop-in { background: var(--card-bg); border-radius: 24px; width: 85%; max-width: 380px; padding: 24px; transform: scale(0.9); transition: 0.3s; box-shadow: 0 10px 40px rgba(0,0,0,0.15); box-sizing: border-box;}
         .custom-modal-overlay.active .pop-in { transform: scale(1); }
     </style>
@@ -184,170 +257,205 @@
 
     <div id="dynamic-top-mask" class="top-blur-mask"></div>
 
-    <div id="section-overview" class="page-section active">
-        <div class="page-header"><h1 class="big-title">Today</h1></div>
-        <form action="/" method="POST">
-            <div class="apple-card">
-                <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
-                    <div style="background: var(--app-bg); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                        <label style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-bottom: 2px;">本轮时间</label>
-                        <input type="datetime-local" id="dateInput" name="date" value="{{ now_str }}" max="2099-12-31T23:59" oninput="calculateNextRound()"
-                               style="background: transparent; border: none; width: 100%; font-size: 18px; font-weight: 800; color: var(--primary); text-align: center; outline: none; font-family: -apple-system, sans-serif; padding: 0; box-sizing: border-box;">
-                    </div>
-                    <div style="background: var(--app-bg); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                         <label style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-bottom: 2px;">下轮预计 (+{{ interval_hours }}h)</label>
-                         <div id="nextRoundText" style="font-size: 18px; font-weight: 800; color: var(--text-main); font-family: -apple-system, sans-serif;">--</div>
+    <div class="scale-container">
+
+        <div id="section-overview" class="page-section active">
+            <div class="page-header"><h1 class="big-title">Today</h1></div>
+            
+            {% set stats = namespace(cooling=0, total=0) %}
+            {% for r in records %}
+                {% if r.next_time and r.next_time != '--' and r.next_time > current_time %}
+                    {% set stats.cooling = stats.cooling + 1 %}
+                {% endif %}
+                {% set vals = r.data.values() | list %}
+                {% if vals and vals[0] %}
+                    {% set stats.total = stats.total + (vals[0] | int) %}
+                {% endif %}
+            {% endfor %}
+
+            <div class="hl-row">
+                <div class="hl-col-6">
+                    <div class="hl-card">
+                        <div class="hl-num" style="color: var(--text-main);">{{ stats.cooling }}</div>
+                        <div class="hl-label">冷却分组数量</div>
                     </div>
                 </div>
+                <div class="hl-col-6">
+                    <div class="hl-card">
+                        <div class="hl-num" style="color: var(--primary);">{{ stats.total }}</div>
+                        <div class="hl-label">累计产出数量</div>
+                    </div>
+                </div>
+            </div>
 
-                <div style="margin-bottom: 16px;">
-                    <label style="font-size: 12px; color: var(--text-sub); font-weight: 600; margin-left: 8px; margin-bottom: 6px; display: block;">日志分组</label>
-                    <select name="group" class="ios-select" style="height: 48px;">
-                        {% for item in items %}<option value="{{ item.name }}">{{ item.name }}</option>{% endfor %}
-                        {% if not items %}<option value="" disabled selected>请先在配置页添加</option>{% endif %}
-                    </select>
+            <form action="/" method="POST" style="margin: 0;">
+                <div class="apple-card" style="margin-top: 0;">
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
+                        <div style="background: var(--app-bg); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                            <label style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-bottom: 2px;">本轮时间</label>
+                            <input type="datetime-local" id="dateInput" name="date" value="{{ now_str }}" max="2099-12-31T23:59" oninput="calculateNextRound()"
+                                   style="background: transparent; border: none; width: 100%; font-size: 18px; font-weight: 700; color: var(--primary); text-align: center; outline: none; font-family: -apple-system, sans-serif; padding: 0; box-sizing: border-box;">
+                        </div>
+                        <div style="background: var(--app-bg); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                             <label style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-bottom: 2px;">下轮预计 (+{{ interval_hours }}h)</label>
+                             <div id="nextRoundText" style="font-size: 18px; font-weight: 700; color: var(--text-main); font-family: -apple-system, sans-serif;">--</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="font-size: 12px; color: var(--text-sub); font-weight: 600; margin-left: 8px; margin-bottom: 6px; display: block;">分组</label>
+                        <select name="group" class="ios-select" style="height: 48px;">
+                            {% for item in items %}<option value="{{ item.name }}">{{ item.name }}</option>{% endfor %}
+                            {% if not items %}<option value="" disabled selected>请先在配置页添加</option>{% endif %}
+                        </select>
+                    </div>
+                    
+                    <div style="margin-bottom: 4px;">
+                        <label style="font-size: 12px; color: var(--text-sub); font-weight: 600; margin-left: 8px; margin-bottom: 6px; display: block;">数量</label>
+                        <input type="number" name="quantity" class="ios-input" placeholder="输入数值" required style="height: 48px;">
+                    </div>
                 </div>
                 
-                <div style="margin-bottom: 4px;">
-                    <label style="font-size: 12px; color: var(--text-sub); font-weight: 600; margin-left: 8px; margin-bottom: 6px; display: block;">数量</label>
-                    <input type="number" name="quantity" class="ios-input" placeholder="输入数值" required style="height: 48px;">
+                <div style="padding: 0;">
+                    <button type="submit" class="ios-btn-primary" style="background: var(--card-bg); color: var(--primary); box-shadow: none;">
+                        <ion-icon name="add-circle" style="font-size: 22px; margin-right: 8px;"></ion-icon>
+                        保存记录
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="section-log" class="page-section">
+            <div class="page-header">
+                <h1 class="big-title">日志</h1>
+                <div style="display: flex; gap: 18px;">
+                    <button id="btnEdit" class="nav-icon-pure" onclick="toggleMode('edit')"><ion-icon name="create-outline"></ion-icon></button>
+                    <button id="btnDelete" class="nav-icon-pure" onclick="toggleMode('delete')"><ion-icon name="trash-outline"></ion-icon></button>
                 </div>
             </div>
-            
-            <div style="padding: 0 16px;">
-                <button type="submit" class="ios-btn-primary">
-                    <ion-icon name="add-circle" style="font-size: 22px; margin-right: 8px;"></ion-icon>
-                    保存记录
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <div id="section-log" class="page-section">
-        <div class="page-header">
-            <h1 class="big-title">日志</h1>
-            <div style="display: flex; gap: 18px;">
-                <button id="btnEdit" class="nav-icon-pure" onclick="toggleMode('edit')"><ion-icon name="create-outline"></ion-icon></button>
-                <button id="btnDelete" class="nav-icon-pure" onclick="toggleMode('delete')"><ion-icon name="trash-outline"></ion-icon></button>
-            </div>
-        </div>
-        <div id="historyContainer" class="apple-card" style="padding: 0 20px;">
-            {% for record in records %}
-                {% set keys = record.data.keys() | list %}{% set values = record.data.values() | list %}
-                <details class="log-details-group">
-                    <summary class="log-summary" onclick="handleRowClick(event, '{{ record.id }}', '{{ record.raw_date }}', '{{ keys[0] }}', '{{ values[0] }}')">
-                        <div class="icon-wrapper-left" style="width:0; opacity:0; overflow:hidden; transition:0.3s;">
-                            <div style="width: 22px; height: 22px; background: var(--danger); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
-                                <div style="width:12px; height:2px; background:white;"></div>
+            <div id="historyContainer" class="apple-card" style="padding: 0 20px;">
+                {% for record in records %}
+                    {% set keys = record.data.keys() | list %}{% set values = record.data.values() | list %}
+                    <details class="log-details-group">
+                        <summary class="log-summary" onclick="handleRowClick(event, '{{ record.id }}', '{{ record.raw_date }}', '{{ keys[0] }}', '{{ values[0] }}')">
+                            <div class="icon-wrapper-left" style="width:0; opacity:0; overflow:hidden; transition:0.3s;">
+                                <div style="width: 22px; height: 22px; background: var(--danger); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                                    <div style="width:12px; height:2px; background:white;"></div>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <div style="flex: 1; display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <div style="font-weight: bold; font-size: 17px;">{{ keys[0] }}</div>
-                                {% if record.next_time and record.next_time != '--' %}
-                                    {% if record.next_time > current_time %}
-                                        <div style="font-size: 12px; color: var(--success); font-weight: 600; margin-top: 2px;">预计下轮：{{ record.next_time }}</div>
+                            
+                            <div style="flex: 1; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: bold; font-size: 17px;">{{ keys[0] }}</div>
+                                    {% if record.next_time and record.next_time != '--' %}
+                                        {% if record.next_time > current_time %}
+                                            <div style="font-size: 12px; color: var(--success); font-weight: 600; margin-top: 2px;">预计下轮：{{ record.next_time }}</div>
+                                        {% else %}
+                                            <div style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-top: 2px;">本轮结束：{{ record.date }}</div>
+                                        {% endif %}
                                     {% else %}
                                         <div style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-top: 2px;">本轮结束：{{ record.date }}</div>
                                     {% endif %}
-                                {% else %}
-                                    <div style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-top: 2px;">本轮结束：{{ record.date }}</div>
-                                {% endif %}
-                            </div>
-                            
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div style="font-size: 22px; font-weight: 800; color: var(--primary); font-family: ui-rounded, sans-serif;">{{ values[0] }}</div>
-                                <div class="icon-wrapper-right" style="width: 0; opacity: 0; overflow: hidden; transition: 0.3s;">
-                                    <ion-icon name="create" style="font-size: 20px; color: var(--primary); margin-left: 8px;"></ion-icon>
                                 </div>
-                                <ion-icon name="chevron-down-outline" class="log-arrow" style="font-size: 18px; color: #C7C7CC; transition: 0.3s;"></ion-icon>
+                                
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="font-size: 22px; font-weight: 700; color: var(--primary); font-family: ui-rounded, 'SF Pro Rounded', system-ui, sans-serif;">{{ values[0] }}</div>
+                                    <div class="icon-wrapper-right" style="width: 0; opacity: 0; overflow: hidden; transition: 0.3s;">
+                                        <ion-icon name="create" style="font-size: 20px; color: var(--primary); margin-left: 8px;"></ion-icon>
+                                    </div>
+                                    <ion-icon name="chevron-down-outline" class="log-arrow" style="font-size: 18px; color: #C7C7CC; transition: 0.3s;"></ion-icon>
+                                </div>
+                            </div>
+                        </summary>
+                        
+                        <div style="padding: 0 0 16px 0;">
+                            <div style="background: var(--app-bg); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                                    <span style="color: var(--text-sub);">本轮分组</span><span style="font-weight: 600;">{{ keys[0] }}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                                    <span style="color: var(--text-sub);">本轮产出</span><span style="font-weight: 600; font-family: ui-rounded, sans-serif; color: var(--primary);">{{ values[0] }}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                                    <span style="color: var(--text-sub);">结束时间</span><span style="font-weight: 600;">{{ record.date }}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                                    <span style="color: var(--text-sub);">预计下轮</span><span style="font-weight: 600; color: var(--primary);">{{ record.next_time if record.next_time and record.next_time != '--' else '暂无' }}</span>
+                                </div>
                             </div>
                         </div>
-                    </summary>
-                    
-                    <div style="padding: 0 0 16px 0;">
-                        <div style="background: var(--app-bg); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
-                            <div style="display: flex; justify-content: space-between; font-size: 13px;">
-                                <span style="color: var(--text-sub);">本轮分组</span><span style="font-weight: 600;">{{ keys[0] }}</span>
+                    </details>
+                {% else %}
+                    <div style="text-align: center; padding: 40px 0; color: var(--text-sub);">暂无日志数据</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div id="section-settings" class="page-section">
+            <div class="page-header"><h1 class="big-title">配置</h1></div>
+            
+            <div class="section-header">记录与周期</div>
+            <div style="display: flex; flex-direction: column; gap: 0;">
+                <details class="settings-card">
+                    <summary class="settings-summary"><div class="summary-title">管理分组</div><div class="summary-status"><span>{{ items|length }} 个分组</span><span class="arrow-icon">▼</span></div></summary>
+                    <div class="details-content">
+                        <form action="/settings" method="POST" class="compact-input-group">
+                            <input type="hidden" name="action" value="add_item"><input type="text" name="name" placeholder="新分组名称" required class="settings-input">
+                            <button type="submit" class="ios-btn-primary" style="height: 42px; width: auto; padding: 0 18px;">添加</button>
+                        </form>
+                        <div style="background: var(--app-bg); border-radius: 15px; overflow: hidden; padding: 0 16px;">
+                            {% for item in items %}
+                            <div class="item-row">
+                                <span class="fw-bold" style="font-size: 15px;">{{ item.name }}</span>
+                                <form action="/settings" method="POST" onsubmit="return confirm('确定删除？');" style="margin: 0;">
+                                    <input type="hidden" name="action" value="delete_item"><input type="hidden" name="id" value="{{ item.id }}">
+                                    <button type="submit" style="background:none; border:none; color: #FF3B30; font-size: 24px; display: flex; padding: 0; cursor:pointer;"><ion-icon name="remove-circle"></ion-icon></button>
+                                </form>
                             </div>
-                            <div style="display: flex; justify-content: space-between; font-size: 13px;">
-                                <span style="color: var(--text-sub);">本轮产出</span><span style="font-weight: 600; font-family: ui-rounded, sans-serif; color: var(--primary);">{{ values[0] }}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; font-size: 13px;">
-                                <span style="color: var(--text-sub);">结束时间</span><span style="font-weight: 600;">{{ record.date }}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; font-size: 13px;">
-                                <span style="color: var(--text-sub);">预计下轮</span><span style="font-weight: 600; color: var(--primary);">{{ record.next_time if record.next_time and record.next_time != '--' else '暂无' }}</span>
-                            </div>
+                            {% endfor %}
                         </div>
                     </div>
                 </details>
-            {% else %}
-                <div style="text-align: center; padding: 40px 0; color: var(--text-sub);">暂无日志数据</div>
-            {% endfor %}
-        </div>
-    </div>
-
-    <div id="section-settings" class="page-section">
-        <div class="page-header"><h1 class="big-title">配置</h1></div>
-        
-        <div class="section-header">记录与周期</div>
-        <div style="display: flex; flex-direction: column; gap: 0;">
-            <details class="settings-card">
-                <summary class="settings-summary"><div class="summary-title">管理日志分组</div><div class="summary-status"><span>{{ items|length }} 个分组</span><span class="arrow-icon">▼</span></div></summary>
-                <div class="details-content">
-                    <form action="/settings" method="POST" class="compact-input-group">
-                        <input type="hidden" name="action" value="add_item"><input type="text" name="name" placeholder="新分组名称" required class="settings-input">
-                        <button type="submit" style="background:var(--primary); color:white; border:none; border-radius:12px; padding:0 15px; height:42px; font-weight:bold; cursor:pointer;">添加</button>
-                    </form>
-                    <div style="background: var(--app-bg); border-radius: 15px; overflow: hidden; padding: 0 16px;">
-                        {% for item in items %}
-                        <div class="item-row">
-                            <span class="fw-bold" style="font-size: 15px;">{{ item.name }}</span>
-                            <form action="/settings" method="POST" onsubmit="return confirm('确定删除？');" style="margin: 0;">
-                                <input type="hidden" name="action" value="delete_item"><input type="hidden" name="id" value="{{ item.id }}">
-                                <button type="submit" style="background:none; border:none; color: #FF3B30; font-size: 24px; display: flex; padding: 0; cursor:pointer;"><ion-icon name="remove-circle"></ion-icon></button>
-                            </form>
-                        </div>
-                        {% endfor %}
+                <details class="settings-card">
+                    <summary class="settings-summary"><div class="summary-title">时间周期</div><div class="summary-status"><span style="color: var(--primary); font-weight: 700;">{{ interval_hours }}h</span><span class="arrow-icon">▼</span></div></summary>
+                    <div class="details-content">
+                        <form action="/settings" method="POST" class="compact-input-group">
+                            <input type="hidden" name="action" value="update_interval"><input type="number" name="interval_hours" value="{{ interval_hours }}" required class="settings-input">
+                            <button type="submit" class="ios-btn-primary" style="height: 42px; width: auto; padding: 0 18px;">保存</button>
+                        </form>
                     </div>
-                </div>
-            </details>
+                </details>
+            </div>
+
+            <div class="section-header" style="margin-top: 12px;">通知服务</div>
             <details class="settings-card">
-                <summary class="settings-summary"><div class="summary-title">下轮时间周期</div><div class="summary-status"><span style="color: #007AFF; font-weight: 800;">{{ interval_hours }}h</span><span class="arrow-icon">▼</span></div></summary>
+                <summary class="settings-summary"><div class="summary-title">Bark 推送配置</div><div class="summary-status"><span>{% if bark_url %}已配置{% else %}未配置{% endif %}</span><span class="arrow-icon">▼</span></div></summary>
                 <div class="details-content">
-                    <form action="/settings" method="POST" class="compact-input-group">
-                        <input type="hidden" name="action" value="update_interval"><input type="number" name="interval_hours" value="{{ interval_hours }}" required class="settings-input">
-                        <button type="submit" style="background:var(--primary); color:white; border:none; border-radius:12px; padding:0 15px; height:42px; font-weight:bold; cursor:pointer;">保存周期</button>
+                    <form action="/settings" method="POST" style="display:flex; flex-direction:column; gap:12px; padding:16px 0;">
+                        <input type="hidden" name="action" value="update_bark">
+                        <label style="font-size:12px; color:var(--text-sub); font-weight:600;">Bark API 地址</label>
+                        <input type="text" name="bark_url" value="{{ bark_url or '' }}" placeholder="https://api.day.app/Key/" class="ios-input" style="background:var(--app-bg);">
+                        <label style="font-size:12px; color:var(--text-sub); font-weight:600;">推送标题 (支持 {group}, {time})</label>
+                        <input type="text" name="bark_title" value="{{ bark_title or 'MatrixPilot 提醒' }}" class="ios-input" style="background:var(--app-bg);">
+                        <label style="font-size:12px; color:var(--text-sub); font-weight:600;">推送内容 (支持 {group}, {time})</label>
+                        <textarea name="bark_body" class="ios-input" style="background:var(--app-bg); height:80px; padding:12px; resize:none; line-height:1.4;">{{ bark_body or '分组【{group}】预计下轮时间已到！' }}</textarea>
+                        <button type="submit" class="ios-btn-primary" style="height:44px; font-size:15px; margin-top:8px;">保存推送配置</button>
                     </form>
                 </div>
             </details>
+
+            <div class="section-header" style="margin-top: 24px;">其他内容</div>
+            <div style="padding: 0 0 24px 0; display: flex; flex-direction: column; gap: 12px;">
+                <button onclick="showPwaGuide()" style="display:flex; justify-content:center; align-items:center; background:var(--card-bg); color:var(--primary); border:none; border-radius:18px; height:54px; font-size:16px; font-weight:500; width:100%; cursor:pointer; box-shadow: none;">
+                    <ion-icon name="share-outline" style="font-size:22px; margin-right:8px;"></ion-icon>添加到主屏幕 (PWA)
+                </button>
+                <a href="/logout" style="display:flex; justify-content:center; align-items:center; background:var(--card-bg); color:var(--danger); border-radius:18px; height:54px; font-size:16px; font-weight:500; text-decoration:none; box-shadow: none;">
+                    <ion-icon name="log-out-outline" style="font-size:22px; margin-right:8px;"></ion-icon>退出当前账号
+                </a>
+            </div>
         </div>
 
-        <div class="section-header" style="margin-top: 12px;">通知服务</div>
-        <details class="settings-card">
-            <summary class="settings-summary"><div class="summary-title">Bark 推送配置</div><div class="summary-status"><span>{% if bark_url %}已配置{% else %}未配置{% endif %}</span><span class="arrow-icon">▼</span></div></summary>
-            <div class="details-content">
-                <form action="/settings" method="POST" style="display:flex; flex-direction:column; gap:12px; padding:16px 0;">
-                    <input type="hidden" name="action" value="update_bark">
-                    
-                    <label style="font-size:12px; color:var(--text-sub); font-weight:600;">Bark API 地址</label>
-                    <input type="text" name="bark_url" value="{{ bark_url or '' }}" placeholder="https://api.day.app/Key/" class="ios-input" style="background:var(--app-bg);">
-                    
-                    <label style="font-size:12px; color:var(--text-sub); font-weight:600;">推送标题 (支持 {group}, {time})</label>
-                    <input type="text" name="bark_title" value="{{ bark_title or 'MatrixPilot 提醒' }}" class="ios-input" style="background:var(--app-bg);">
-                    
-                    <label style="font-size:12px; color:var(--text-sub); font-weight:600;">推送内容 (支持 {group}, {time})</label>
-                    <textarea name="bark_body" class="ios-input" style="background:var(--app-bg); height:80px; padding:12px; resize:none; line-height:1.4;">{{ bark_body or '分组【{group}】预计下轮时间已到！' }}</textarea>
-                    
-                    <button type="submit" class="ios-btn-primary" style="height:44px; font-size:15px; margin-top:8px;">保存推送配置</button>
-                </form>
-            </div>
-        </details>
-    </div>
-
-    <nav class="bottom-nav">
+    </div> <nav class="bottom-nav">
         <div class="nav-tabs-c">
             <a class="nav-item-c active" onclick="switchTab('overview', this)">总览</a>
             <a class="nav-item-c" onclick="switchTab('log', this)">日志</a>
@@ -379,9 +487,42 @@
         </div>
     </div>
     
+    <div class="custom-modal-overlay" id="pwaGuideModal" onclick="closePwaGuide()">
+        <div class="pop-in" onclick="event.stopPropagation()" style="text-align: center;">
+            <ion-icon name="share-outline" style="font-size: 48px; color: var(--primary); margin-bottom: 16px;"></ion-icon>
+            <h3 style="margin-top:0; margin-bottom:12px; font-size:18px;">如何添加到主屏幕？</h3>
+            <p style="color:var(--text-sub); font-size:14px; margin-bottom:24px; line-height:1.6; text-align: left;">
+                1. 点击屏幕下方菜单栏的 <b>分享</b> 图标<br>
+                2. 在弹出的菜单中下滑，选择 <b>“添加到主屏幕”</b><br>
+                3. 在右上角点击 <b>“添加”</b> 即可完成！
+            </p>
+            <button class="ios-btn-primary" onclick="closePwaGuide()" style="height: 48px;">我知道了</button>
+        </div>
+    </div>
+
     <form id="globalDeleteForm" method="POST" style="display:none;"></form>
 
     <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log('Service Worker 注册失败', err));
+            });
+        }
+
+        function showPwaGuide() {
+            if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
+                alert("当前已经是独立 PWA 应用啦！🎉");
+                return;
+            }
+            document.getElementById('pwaGuideModal').style.display = 'flex';
+            setTimeout(() => document.getElementById('pwaGuideModal').classList.add('active'), 10);
+        }
+
+        function closePwaGuide() {
+            document.getElementById('pwaGuideModal').classList.remove('active');
+            setTimeout(() => document.getElementById('pwaGuideModal').style.display = 'none', 200);
+        }
+
         const topMask = document.getElementById('dynamic-top-mask');
         if (topMask) {
             window.addEventListener('scroll', () => {
@@ -465,6 +606,7 @@
                 }
             }
         }
+        
         function closeModal() {
             document.getElementById('editModalOverlay').classList.remove('active');
             setTimeout(() => document.getElementById('editModalOverlay').style.display = 'none', 200);
