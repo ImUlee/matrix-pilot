@@ -109,21 +109,19 @@
            三、 全局排版与常规组件 (全面扁平化去阴影)
            ========================================= */
         .page-header { display: flex; justify-content: space-between; align-items: center; padding: 0; margin: 20px 0; min-height: 42px; }
-        /* 标题字重瘦身：800 -> 700 */
         .big-title { font-size: 34px; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
-        .section-header { font-size: 1.2rem; font-weight: bold; margin: 24px 0 8px 0; }
+        .section-header { font-size: 1.4rem; font-weight: bold; margin: 24px 0 8px 0; }
 
-        /* 卡片去阴影，纯粹依靠底色区分 */
         .apple-card { background: var(--card-bg); border-radius: 24px; box-shadow: none; margin: 0 0 12px 0; padding: 20px; }
 
         .ios-input, .ios-select { background: var(--app-bg); border: none; border-radius: 12px; height: 48px; padding: 0 15px; font-size: 15px; font-weight: 600; color: var(--text-main); width: 100%; outline: none; box-sizing: border-box; -webkit-appearance: none; appearance: none;}
         
         .ios-btn-primary { 
-            background: var(--primary); color: #FFF; border: none; border-radius: 30px; 
-            height: 52px; font-size: 14px; font-weight: 500; width: 100%; 
+            background: var(--primary); color: #FFF; border: none; border-radius: 50px; 
+            height: 52px; font-size: 17px; font-weight: bold; width: 100%; 
             cursor: pointer; transition: opacity 0.2s; white-space: nowrap; 
             display: flex; justify-content: center; align-items: center; 
-            box-shadow: 0 4px 12px var(--primary-shadow);
+            box-shadow: none;
         }
         .ios-btn-primary:active { opacity: 0.8; }
 
@@ -135,7 +133,6 @@
             border-radius: 24px; 
             padding: 16px 12px; 
             height: 110px; 
-            /* 完全去阴影 */
             box-shadow: none; 
             display: flex; 
             flex-direction: column; 
@@ -145,7 +142,6 @@
         }
         .hl-num { 
             font-size: 2.4rem; 
-            /* 数字字重瘦身：800 -> 700 */
             font-weight: 700; 
             line-height: 1; 
             margin-bottom: 6px;
@@ -203,7 +199,6 @@
             box-sizing: border-box; 
             background: var(--nav-bg);
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            /* 底部导航去悬浮感：用0.5px的极细边框代替投影 */
             border-top: 0.5px solid var(--border-color);
             box-shadow: none;
             z-index: 1000; 
@@ -217,7 +212,6 @@
         /* =========================================
            八、 折叠面板与列表细节
            ========================================= */
-        /* 配置卡片去阴影 */
         .settings-card { background: var(--card-bg); border-radius: 18px; box-shadow: none; overflow: hidden; margin: 0 0 12px 0; }
         .settings-summary { height: 54px; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; list-style: none; outline: none; user-select: none; }
         .settings-summary::-webkit-details-marker { display: none; }
@@ -248,7 +242,6 @@
             background: var(--modal-overlay); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; overscroll-behavior: contain;
         }
         .custom-modal-overlay.active { display: flex; opacity: 1; }
-        /* 弹窗是全屏唯一需要保留阴影的元素（以体现高度层级） */
         .pop-in { background: var(--card-bg); border-radius: 24px; width: 85%; max-width: 380px; padding: 24px; transform: scale(0.9); transition: 0.3s; box-shadow: 0 10px 40px rgba(0,0,0,0.15); box-sizing: border-box;}
         .custom-modal-overlay.active .pop-in { transform: scale(1); }
     </style>
@@ -455,7 +448,9 @@
             </div>
         </div>
 
-    </div> <nav class="bottom-nav">
+    </div> 
+
+    <nav class="bottom-nav">
         <div class="nav-tabs-c">
             <a class="nav-item-c active" onclick="switchTab('overview', this)">总览</a>
             <a class="nav-item-c" onclick="switchTab('log', this)">日志</a>
@@ -536,6 +531,15 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // 优化点2：页面加载时，使用 JavaScript 获取真实的本地系统时间
+            const dateInput = document.getElementById('dateInput');
+            if (dateInput) {
+                const localNow = new Date();
+                // 根据本地时区偏移量调整时间，确保 .toISOString() 截取出来的是本地时间
+                localNow.setMinutes(localNow.getMinutes() - localNow.getTimezoneOffset());
+                dateInput.value = localNow.toISOString().slice(0, 16);
+            }
+
             const urlParams = new URLSearchParams(window.location.search);
             const activeTab = urlParams.get('tab');
             if (activeTab) {
