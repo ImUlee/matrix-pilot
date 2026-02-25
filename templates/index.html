@@ -27,14 +27,19 @@
             --text-sub: #A8A8A8;
             --border-color: #e5e5ea;
             --modal-overlay: rgba(0, 0, 0, 0.5);
+            
             --top-blur-bg: rgba(244, 243, 249, 0.75);
+            
             --primary: #007AFF;
             --primary-shadow: rgba(0, 122, 255, 0.15);
+            
             --danger: #FF3B30;
             --success: #34C759;
             --offline: #A8A8A8;
+
             --ios-orange: #FF9500;
             --ios-purple: #AF52DE;
+
             --nav-bg: rgba(69, 69, 69, 0.85); 
             --nav-item-bg: rgba(0, 0, 0, 0.25);
             --nav-text-normal: rgba(255, 255, 255, 0.5);
@@ -49,13 +54,18 @@
                 --text-main: #FFFFFF;
                 --border-color: #38383A;
                 --modal-overlay: rgba(0, 0, 0, 0.8);
+                
                 --top-blur-bg: rgba(0, 0, 0, 0.75);
+                
                 --primary: #0A66C2; 
                 --primary-shadow: rgba(0, 0, 0, 0.3);
+                
                 --success: #30D158;
                 --offline: #636366;
+
                 --ios-orange: #FF9F0A;
                 --ios-purple: #BF5AF2;
+
                 --nav-bg: rgba(118, 118, 128, 0.24);
                 --nav-item-bg: rgba(0, 0, 0, 0.2);
                 --nav-text-normal: rgba(255, 255, 255, 0.5);
@@ -96,7 +106,7 @@
         }
 
         /* =========================================
-           三、 全局排版与常规组件
+           三、 全局排版与常规组件 (全面扁平化去阴影)
            ========================================= */
         .page-header { display: flex; justify-content: space-between; align-items: center; padding: 0; margin: 20px 0; min-height: 42px; }
         .big-title { font-size: 34px; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
@@ -318,7 +328,7 @@
                             <div style="flex: 1; display: flex; justify-content: space-between; align-items: center;">
                                 <div>
                                     <div style="font-weight: bold; font-size: 17px;">{{ keys[0] }}</div>
-                                    <div class="log-status-text" data-next-time="{{ record.next_time }}" data-date="{{ record.date }}">
+                                    <div class="log-status-text" data-next-time="{{ record.next_time }}" data-date="{{ record.date }}" data-group="{{ keys[0] }}">
                                         <div style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-top: 2px;">校验中...</div>
                                     </div>
                                 </div>
@@ -480,7 +490,6 @@
             });
         }
 
-        // --- Bark 测试推送 JS ---
         async function testBark() {
             const form = document.getElementById('barkForm');
             const formData = new FormData(form);
@@ -493,30 +502,41 @@
             }
         }
 
-        // --- 核心：前端强制本地时间智能校验 ---
+        // --- 核心更新：引入 Set() 智能判断分组最新状态 ---
         function updateDynamicStatuses() {
             const now = new Date();
             let coolingCount = 0;
+            const seenGroups = new Set();
 
             document.querySelectorAll('.log-status-text').forEach(el => {
                 const nextTimeStr = el.getAttribute('data-next-time');
                 const dateStr = el.getAttribute('data-date');
+                const groupName = el.getAttribute('data-group');
                 
-                if (nextTimeStr && nextTimeStr !== '--' && nextTimeStr !== 'None') {
-                    // 将 "2026-02-25 15:00" 转换为兼容的 Date 格式
+                // 因为记录是从新到旧渲染的，首次遇到的一定是该组的最新记录
+                const isLatest = !seenGroups.has(groupName);
+                if (groupName) seenGroups.add(groupName);
+
+                if (!isLatest) {
+                    // 如果不是最新记录 -> 意味着已经被新数据覆盖，沦为历史 (状态3：灰色)
+                    el.innerHTML = `<div style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-top: 2px;">本轮结束：${dateStr}</div>`;
+                } else if (nextTimeStr && nextTimeStr !== '--' && nextTimeStr !== 'None') {
                     const nextTime = new Date(nextTimeStr.replace(' ', 'T') + ':00');
                     if (nextTime > now) {
+                        // 最新记录且未到时间 -> 冷却中 (状态1：绿色)
                         el.innerHTML = `<div style="font-size: 12px; color: var(--success); font-weight: 600; margin-top: 2px;">预计下轮：${nextTimeStr}</div>`;
                         coolingCount++;
                     } else {
-                        el.innerHTML = `<div style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-top: 2px;">本轮结束：${dateStr}</div>`;
+                        // 最新记录但时间已过 -> 上号预警 (状态2：橙色)
+                        el.innerHTML = `<div style="font-size: 12px; color: var(--ios-orange); font-weight: 600; margin-top: 2px;">上号预警：${nextTimeStr}</div>`;
                     }
                 } else {
+                    // 托底保护
                     el.innerHTML = `<div style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-top: 2px;">本轮结束：${dateStr}</div>`;
                 }
             });
             
-            // 实时刷入上方仪表盘的冷却数量
+            // 实时更新 Dashboard 的冷却数字
             const coolingNumEl = document.getElementById('dashboard-cooling');
             if(coolingNumEl) coolingNumEl.innerText = coolingCount;
         }
@@ -548,7 +568,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // 初始化系统当前时间，强制覆盖后端时间
             const dateInput = document.getElementById('dateInput');
             if (dateInput) {
                 const localNow = new Date();
@@ -569,8 +588,8 @@
             calculateNextRound();
             updateDynamicStatuses();
             
-            // 每 60 秒自动巡检一次，挂机不刷新也能看到状态变更
-            setInterval(updateDynamicStatuses, 60000); 
+            // 每 10 秒刷新一次状态，保证“上号预警”能精准变色
+            setInterval(updateDynamicStatuses, 10000); 
         });
 
         function switchTab(id, el) {
