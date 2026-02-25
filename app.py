@@ -11,10 +11,8 @@ from sqlalchemy import text
 app = Flask(__name__)
 
 # --- 安全与会话配置 ---
-# 必须设置 secret_key 才能使用 session，有效期设置为 30 天
 app.secret_key = os.environ.get('SECRET_KEY', 'matrix_pilot_super_secret_key')
 app.permanent_session_lifetime = timedelta(days=30)
-# 获取环境变量中的访问密码，默认 123456
 APP_PIN = os.environ.get('APP_PIN', '123456')
 
 # =========================================
@@ -32,7 +30,9 @@ class Record(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.String(50))      
     next_time = db.Column(db.String(50)) 
-    data = db.Column(db.JSON)           
+    data = db.Column(db.JSON) 
+    # 新增字段：标记是否已推送过，防止重复推送和重启丢失
+    notified = db.Column(db.Boolean, default=False)          
 
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -56,6 +56,12 @@ def init_db():
                     conn.execute(text("ALTER TABLE settings ADD COLUMN bark_title VARCHAR(100) DEFAULT 'MatrixPilot 提醒'"))
                 if 'bark_body' not in columns:
                     conn.execute(text("ALTER TABLE settings ADD COLUMN bark_body VARCHAR(255) DEFAULT '分组【{group}】预计下轮时间已到！'"))
+                
+                # 自动升级 Record 表，增加 notified 字段
+                rec_result = conn.execute(text("PRAGMA table_info(record)")).fetchall()
+                rec_cols = [row[1] for row in rec_result]
+                if 'notified' not in rec_cols:
+                    conn.execute(text("ALTER TABLE record ADD COLUMN notified BOOLEAN DEFAULT 0"))
                 conn.commit()
         except Exception as e:
             print(f"数据库补丁执行跳过: {e}")
@@ -77,42 +83,62 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# =========================================
-# 三、 PWA 与 Bark 异步推送
-# =========================================
 @app.route('/sw.js')
 def serve_sw():
     return send_from_directory(app.static_folder, 'sw.js', mimetype='application/javascript')
 
-def async_bark_task(group_name, target_time_str):
-    with app.app_context():
-        settings = Settings.query.first()
-        if not settings or not settings.bark_url: return
+# =========================================
+# 三、 Bark 全局守护线程 (坚如磐石的推送引擎)
+# =========================================
+def notification_daemon():
+    """后台持续轮询，接管所有推送任务，服务器重启也不丢失"""
+    time.sleep(5) # 延迟启动等待数据库准备完毕
+    while True:
         try:
-            target_time = datetime.strptime(target_time_str, '%Y-%m-%d %H:%M')
-            while True:
-                if datetime.now() >= target_time:
-                    title = settings.bark_title.replace("{group}", group_name).replace("{time}", target_time_str)
-                    body = settings.bark_body.replace("{group}", group_name).replace("{time}", target_time_str)
-                    api_url = f"{settings.bark_url.rstrip('/')}/{title}/{body}?sound=minuet&group=MatrixPilot&isArchive=1"
-                    requests.get(api_url, timeout=10)
-                    break
-                time.sleep(30)
+            with app.app_context():
+                settings = Settings.query.first()
+                if settings and settings.bark_url:
+                    # 使用服务器当前时间与记录做比对
+                    now_str = datetime.now().strftime('%Y-%m-%d %H:%M')
+                    # 查出所有未通知且到达时间的记录
+                    pending_records = Record.query.filter(
+                        Record.next_time != '--',
+                        Record.next_time != None,
+                        Record.notified == False
+                    ).all()
+                    
+                    for r in pending_records:
+                        if now_str >= r.next_time:
+                            # 悲观锁更新，防止多线程重复发
+                            updated = Record.query.filter_by(id=r.id, notified=False).update({'notified': True})
+                            db.session.commit()
+                            if updated:
+                                group_name = list(r.data.keys())[0]
+                                title = settings.bark_title.replace("{group}", group_name).replace("{time}", r.next_time)
+                                body = settings.bark_body.replace("{group}", group_name).replace("{time}", r.next_time)
+                                api_url = f"{settings.bark_url.rstrip('/')}/{title}/{body}?sound=minuet&group=MatrixPilot&isArchive=1"
+                                try:
+                                    requests.get(api_url, timeout=10)
+                                except Exception as e:
+                                    print(f"Bark Push Error: {e}")
         except Exception as e:
-            print(f"Bark 推送任务失败: {e}")
+            print(f"Daemon Loop Error: {e}")
+        time.sleep(60) # 每分钟巡检一次
+
+# 启动后台守护引擎
+threading.Thread(target=notification_daemon, daemon=True).start()
 
 # =========================================
-# 四、 路由逻辑 (全部加上权限保护)
+# 四、 路由逻辑
 # =========================================
 
-# --- 登录与登出路由 ---
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
     if request.method == 'POST':
         pin = request.form.get('pin')
         if pin == APP_PIN:
-            session.permanent = True  # 开启 30 天免登录
+            session.permanent = True
             session['logged_in'] = True
             return redirect(url_for('index'))
         else:
@@ -124,7 +150,6 @@ def logout():
     session.pop('logged_in', None)
     return redirect(url_for('login'))
 
-# --- 业务路由 ---
 @app.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
@@ -138,15 +163,9 @@ def index():
         next_dt = dt_obj + timedelta(hours=settings.interval_hours)
         next_time_str = next_dt.strftime('%Y-%m-%d %H:%M')
         
-        new_record = Record(date=date_str, next_time=next_time_str, data={group_name: quantity})
+        new_record = Record(date=date_str, next_time=next_time_str, data={group_name: quantity}, notified=False)
         db.session.add(new_record)
         db.session.commit()
-
-        if settings.bark_url:
-            thread = threading.Thread(target=async_bark_task, args=(group_name, next_time_str))
-            thread.daemon = True
-            thread.start()
-
         return redirect(url_for('index'))
 
     items = Item.query.all()
@@ -154,8 +173,6 @@ def index():
     return render_template('index.html', 
                            items=items, 
                            records=records, 
-                           now_str=datetime.now().strftime('%Y-%m-%dT%H:%M'),
-                           current_time=datetime.now().strftime('%Y-%m-%d %H:%M'),
                            interval_hours=settings.interval_hours,
                            bark_url=settings.bark_url,
                            bark_title=settings.bark_title,
@@ -170,6 +187,8 @@ def edit_record(id):
     new_val = request.form.get('value')
     record.date = new_date
     record.next_time = (datetime.strptime(new_date, '%Y-%m-%d %H:%M') + timedelta(hours=settings.interval_hours)).strftime('%Y-%m-%d %H:%M')
+    # 修改时间后，重置推送状态，以便重新计算
+    record.notified = False
     old_key = list(record.data.keys())[0]
     record.data = {old_key: new_val}
     db.session.commit()
@@ -202,6 +221,26 @@ def update_settings():
         settings.bark_body = request.form.get('bark_body')
     db.session.commit()
     return redirect(url_for('index', tab='settings'))
+
+# --- 新增：Bark 实时测试路由 ---
+@app.route('/test_bark', methods=['POST'])
+@login_required
+def test_bark():
+    url = request.form.get('bark_url')
+    if not url:
+        return "请先填写 Bark URL", 400
+    
+    title = request.form.get('bark_title', '测试').replace("{group}", "通道测试").replace("{time}", datetime.now().strftime('%H:%M'))
+    body = request.form.get('bark_body', '成功连通！').replace("{group}", "通道测试").replace("{time}", datetime.now().strftime('%H:%M'))
+    
+    api_url = f"{url.rstrip('/')}/{title}/{body}?sound=minuet&group=MatrixPilot&isArchive=1"
+    try:
+        r = requests.get(api_url, timeout=5)
+        if r.status_code == 200:
+            return "测试推送成功，请查看手机！", 200
+        return f"接口拒绝请求 (HTTP {r.status_code})", 400
+    except Exception as e:
+        return f"无法连接到 Bark: {str(e)}", 400
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
