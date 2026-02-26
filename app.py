@@ -31,7 +31,6 @@ class Record(db.Model):
     date = db.Column(db.String(50))      
     next_time = db.Column(db.String(50)) 
     data = db.Column(db.JSON) 
-    # 新增字段：标记是否已推送过，防止重复推送和重启丢失
     notified = db.Column(db.Boolean, default=False)          
 
 class Item(db.Model):
@@ -57,7 +56,6 @@ def init_db():
                 if 'bark_body' not in columns:
                     conn.execute(text("ALTER TABLE settings ADD COLUMN bark_body VARCHAR(255) DEFAULT '分组【{group}】预计下轮时间已到！'"))
                 
-                # 自动升级 Record 表，增加 notified 字段
                 rec_result = conn.execute(text("PRAGMA table_info(record)")).fetchall()
                 rec_cols = [row[1] for row in rec_result]
                 if 'notified' not in rec_cols:
@@ -88,19 +86,16 @@ def serve_sw():
     return send_from_directory(app.static_folder, 'sw.js', mimetype='application/javascript')
 
 # =========================================
-# 三、 Bark 全局守护线程 (坚如磐石的推送引擎)
+# 三、 Bark 全局守护线程
 # =========================================
 def notification_daemon():
-    """后台持续轮询，接管所有推送任务，服务器重启也不丢失"""
-    time.sleep(5) # 延迟启动等待数据库准备完毕
+    time.sleep(5) 
     while True:
         try:
             with app.app_context():
                 settings = Settings.query.first()
                 if settings and settings.bark_url:
-                    # 使用服务器当前时间与记录做比对
                     now_str = datetime.now().strftime('%Y-%m-%d %H:%M')
-                    # 查出所有未通知且到达时间的记录
                     pending_records = Record.query.filter(
                         Record.next_time != '--',
                         Record.next_time != None,
@@ -109,7 +104,6 @@ def notification_daemon():
                     
                     for r in pending_records:
                         if now_str >= r.next_time:
-                            # 悲观锁更新，防止多线程重复发
                             updated = Record.query.filter_by(id=r.id, notified=False).update({'notified': True})
                             db.session.commit()
                             if updated:
@@ -123,15 +117,13 @@ def notification_daemon():
                                     print(f"Bark Push Error: {e}")
         except Exception as e:
             print(f"Daemon Loop Error: {e}")
-        time.sleep(60) # 每分钟巡检一次
+        time.sleep(60) 
 
-# 启动后台守护引擎
 threading.Thread(target=notification_daemon, daemon=True).start()
 
 # =========================================
 # 四、 路由逻辑
 # =========================================
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
@@ -187,7 +179,6 @@ def edit_record(id):
     new_val = request.form.get('value')
     record.date = new_date
     record.next_time = (datetime.strptime(new_date, '%Y-%m-%d %H:%M') + timedelta(hours=settings.interval_hours)).strftime('%Y-%m-%d %H:%M')
-    # 修改时间后，重置推送状态，以便重新计算
     record.notified = False
     old_key = list(record.data.keys())[0]
     record.data = {old_key: new_val}
@@ -206,23 +197,41 @@ def delete_record(id):
 def update_settings():
     action = request.form.get('action')
     settings = Settings.query.first()
+    
     if action == 'add_item':
         name = request.form.get('name')
         if name and not Item.query.filter_by(name=name).first():
             db.session.add(Item(name=name))
+            
+    elif action == 'edit_item':
+        item = Item.query.get(request.form.get('id'))
+        new_name = request.form.get('name')
+        if item and new_name and item.name != new_name:
+            if not Item.query.filter_by(name=new_name).first():
+                old_name = item.name
+                item.name = new_name
+                # 同步修改历史日志数据中的分组名称，防止断层
+                for r in Record.query.all():
+                    if r.data and old_name in r.data:
+                        new_data = dict(r.data)
+                        new_data[new_name] = new_data.pop(old_name)
+                        r.data = new_data
+                        
     elif action == 'delete_item':
         item = Item.query.get(request.form.get('id'))
         if item: db.session.delete(item)
+        
     elif action == 'update_interval':
         settings.interval_hours = int(request.form.get('interval_hours'))
+        
     elif action == 'update_bark':
         settings.bark_url = request.form.get('bark_url')
         settings.bark_title = request.form.get('bark_title')
         settings.bark_body = request.form.get('bark_body')
+        
     db.session.commit()
     return redirect(url_for('index', tab='settings'))
 
-# --- 新增：Bark 实时测试路由 ---
 @app.route('/test_bark', methods=['POST'])
 @login_required
 def test_bark():

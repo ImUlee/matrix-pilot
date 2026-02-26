@@ -27,19 +27,14 @@
             --text-sub: #A8A8A8;
             --border-color: #e5e5ea;
             --modal-overlay: rgba(0, 0, 0, 0.5);
-            
             --top-blur-bg: rgba(244, 243, 249, 0.75);
-            
             --primary: #007AFF;
             --primary-shadow: rgba(0, 122, 255, 0.15);
-            
             --danger: #FF3B30;
             --success: #34C759;
             --offline: #A8A8A8;
-
             --ios-orange: #FF9500;
             --ios-purple: #AF52DE;
-
             --nav-bg: rgba(69, 69, 69, 0.85); 
             --nav-item-bg: rgba(0, 0, 0, 0.25);
             --nav-text-normal: rgba(255, 255, 255, 0.5);
@@ -54,18 +49,13 @@
                 --text-main: #FFFFFF;
                 --border-color: #38383A;
                 --modal-overlay: rgba(0, 0, 0, 0.8);
-                
                 --top-blur-bg: rgba(0, 0, 0, 0.75);
-                
                 --primary: #0A66C2; 
                 --primary-shadow: rgba(0, 0, 0, 0.3);
-                
                 --success: #30D158;
                 --offline: #636366;
-
                 --ios-orange: #FF9F0A;
                 --ios-purple: #BF5AF2;
-
                 --nav-bg: rgba(118, 118, 128, 0.24);
                 --nav-item-bg: rgba(0, 0, 0, 0.2);
                 --nav-text-normal: rgba(255, 255, 255, 0.5);
@@ -126,7 +116,7 @@
         .ios-btn-primary:active { opacity: 0.8; }
 
         /* =========================================
-           四、 数据双卡模块规范 (Highlight Cards Spec)
+           四、 数据双卡模块规范
            ========================================= */
         .hl-card { 
             background: var(--card-bg); 
@@ -152,7 +142,6 @@
             color: var(--text-sub);
             font-weight: 500;
         }
-
         .hl-row { display: flex; gap: 8px; padding: 0; margin-bottom: 8px; }
         .hl-col-6 { flex: 1; }
 
@@ -215,7 +204,8 @@
         .compact-input-group { display: flex; gap: 10px; padding: 16px 0; align-items: center; }
         .settings-input { height: 42px !important; border-radius: 12px !important; border: 1px solid var(--border-color) !important; background: var(--app-bg) !important; font-size: 15px !important; padding: 0 12px !important; flex: 1; font-weight: 600; outline: none; color: var(--text-main); box-sizing: border-box;}
         
-        .item-row { display: flex; justify-content: space-between; align-items: center; position: relative; padding: 12px 0; min-height: 44px; box-sizing: border-box; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; position: relative; padding: 12px 0; min-height: 44px; box-sizing: border-box; cursor: pointer; transition: background 0.2s;}
+        .item-row:active { opacity: 0.6; }
         .item-row::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 0.5px; background: var(--border-color); }
         .item-row:last-child::after { display: none; }
 
@@ -380,12 +370,9 @@
                         </form>
                         <div style="background: var(--app-bg); border-radius: 15px; overflow: hidden; padding: 0 16px;">
                             {% for item in items %}
-                            <div class="item-row">
+                            <div class="item-row" onclick="openGroupEditModal('{{ item.id }}', '{{ item.name }}')">
                                 <span class="fw-bold" style="font-size: 15px;">{{ item.name }}</span>
-                                <form action="/settings" method="POST" onsubmit="return confirm('确定删除？');" style="margin: 0;">
-                                    <input type="hidden" name="action" value="delete_item"><input type="hidden" name="id" value="{{ item.id }}">
-                                    <button type="submit" style="background:none; border:none; color: #FF3B30; font-size: 24px; display: flex; padding: 0; cursor:pointer;"><ion-icon name="remove-circle"></ion-icon></button>
-                                </form>
+                                <ion-icon name="chevron-forward-outline" style="color: var(--text-sub); font-size: 18px;"></ion-icon>
                             </div>
                             {% endfor %}
                         </div>
@@ -468,6 +455,34 @@
         </div>
     </div>
     
+    <div class="custom-modal-overlay" id="groupEditModalOverlay" onclick="closeGroupModal()">
+        <div class="pop-in" onclick="event.stopPropagation()">
+            <div style="display:flex; justify-content:space-between; margin-bottom:24px; align-items: center;">
+                <h5 style="font-weight:bold; margin:0; font-size: 20px;">编辑分组</h5>
+                <ion-icon name="close-circle" style="font-size:28px; color:var(--text-sub); cursor:pointer;" onclick="closeGroupModal()"></ion-icon>
+            </div>
+            <form action="/settings" method="POST" id="groupEditForm">
+                <input type="hidden" name="action" value="edit_item">
+                <input type="hidden" id="modalGroupId" name="id">
+                <div style="margin-bottom:24px;">
+                    <label style="font-size:12px; color:var(--text-sub); font-weight: 600; display: block; margin-bottom: 6px;">分组名称</label>
+                    <input type="text" id="modalGroupName" name="name" class="ios-input" style="height: 48px; width: 100%; border: 1px solid var(--border-color);" required>
+                </div>
+                <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                    <button type="button" class="ios-btn-primary" style="background: transparent; color: var(--text-main); border: 1px solid var(--border-color); height: 52px; box-shadow: none; flex: 1;" onclick="closeGroupModal()">取消</button>
+                    <button type="submit" class="ios-btn-primary" style="height: 52px; box-shadow: none; flex: 1;">保存修改</button>
+                </div>
+            </form>
+            <form action="/settings" method="POST" style="margin:0;" onsubmit="return confirm('⚠️ 确定要彻底删除该分组吗？此操作无法恢复！');">
+                <input type="hidden" name="action" value="delete_item">
+                <input type="hidden" id="modalGroupDelId" name="id">
+                <button type="submit" class="ios-btn-primary" style="background: rgba(255, 59, 48, 0.1); color: var(--danger); height: 52px; box-shadow: none; width: 100%;">
+                    <ion-icon name="trash" style="margin-right: 6px; font-size: 18px;"></ion-icon> 删除该分组
+                </button>
+            </form>
+        </div>
+    </div>
+
     <div class="custom-modal-overlay" id="pwaGuideModal" onclick="closePwaGuide()">
         <div class="pop-in" onclick="event.stopPropagation()" style="text-align: center;">
             <ion-icon name="share-outline" style="font-size: 48px; color: var(--primary); margin-bottom: 16px;"></ion-icon>
@@ -502,6 +517,20 @@
             }
         }
 
+        // --- 分组管理弹窗控制逻辑 ---
+        function openGroupEditModal(id, name) {
+            document.getElementById('modalGroupId').value = id;
+            document.getElementById('modalGroupDelId').value = id;
+            document.getElementById('modalGroupName').value = name;
+            document.getElementById('groupEditModalOverlay').style.display = 'flex';
+            setTimeout(() => document.getElementById('groupEditModalOverlay').classList.add('active'), 10);
+        }
+
+        function closeGroupModal() {
+            document.getElementById('groupEditModalOverlay').classList.remove('active');
+            setTimeout(() => document.getElementById('groupEditModalOverlay').style.display = 'none', 200);
+        }
+
         // --- 核心更新：引入 Set() 智能判断分组最新状态 ---
         function updateDynamicStatuses() {
             const now = new Date();
@@ -513,30 +542,27 @@
                 const dateStr = el.getAttribute('data-date');
                 const groupName = el.getAttribute('data-group');
                 
-                // 因为记录是从新到旧渲染的，首次遇到的一定是该组的最新记录
                 const isLatest = !seenGroups.has(groupName);
                 if (groupName) seenGroups.add(groupName);
 
                 if (!isLatest) {
-                    // 如果不是最新记录 -> 意味着已经被新数据覆盖，沦为历史 (状态3：灰色)
+                    // 状态3：已被覆盖的历史记录
                     el.innerHTML = `<div style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-top: 2px;">本轮结束：${dateStr}</div>`;
                 } else if (nextTimeStr && nextTimeStr !== '--' && nextTimeStr !== 'None') {
                     const nextTime = new Date(nextTimeStr.replace(' ', 'T') + ':00');
                     if (nextTime > now) {
-                        // 最新记录且未到时间 -> 冷却中 (状态1：绿色)
+                        // 状态1：冷却中
                         el.innerHTML = `<div style="font-size: 12px; color: var(--success); font-weight: 600; margin-top: 2px;">预计下轮：${nextTimeStr}</div>`;
                         coolingCount++;
                     } else {
-                        // 最新记录但时间已过 -> 上号预警 (状态2：橙色)
+                        // 状态2：上号预警 (时间已过)
                         el.innerHTML = `<div style="font-size: 12px; color: var(--ios-orange); font-weight: 600; margin-top: 2px;">上号预警：${nextTimeStr}</div>`;
                     }
                 } else {
-                    // 托底保护
                     el.innerHTML = `<div style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-top: 2px;">本轮结束：${dateStr}</div>`;
                 }
             });
             
-            // 实时更新 Dashboard 的冷却数字
             const coolingNumEl = document.getElementById('dashboard-cooling');
             if(coolingNumEl) coolingNumEl.innerText = coolingCount;
         }
@@ -588,7 +614,6 @@
             calculateNextRound();
             updateDynamicStatuses();
             
-            // 每 10 秒刷新一次状态，保证“上号预警”能精准变色
             setInterval(updateDynamicStatuses, 10000); 
         });
 
