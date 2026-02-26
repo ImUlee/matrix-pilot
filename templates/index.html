@@ -19,7 +19,7 @@
 
     <style>
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
-        [v-cloak] { display: none; } /* 防止 Vue 加载闪烁 */
+        [v-cloak] { display: none !important; }
 
         :root {
             --app-bg: #f4f3f9; --card-bg: #FFFFFF; --text-main: #1C1C1E; --text-sub: #A8A8A8;
@@ -113,6 +113,7 @@
 
 <div id="dynamic-top-mask" class="top-blur-mask"></div>
 
+{% raw %}
 <div id="app" v-cloak>
     <div class="scale-container">
 
@@ -345,9 +346,22 @@
         </div>
     </div>
 </div>
+{% endraw %}
+
+<div class="custom-modal-overlay" id="pwaGuideModal" onclick="closePwaGuide()">
+    <div class="pop-in" onclick="event.stopPropagation()" style="text-align: center;">
+        <ion-icon name="share-outline" style="font-size: 48px; color: var(--primary); margin-bottom: 16px;"></ion-icon>
+        <h3 style="margin-top:0; margin-bottom:12px; font-size:18px;">如何添加到主屏幕？</h3>
+        <p style="color:var(--text-sub); font-size:14px; margin-bottom:24px; line-height:1.6; text-align: left;">
+            1. 点击屏幕下方菜单栏的 <b>分享</b> 图标<br>
+            2. 在弹出的菜单中下滑，选择 <b>“添加到主屏幕”</b><br>
+            3. 在右上角点击 <b>“添加”</b> 即可完成！
+        </p>
+        <button class="ios-btn-primary" onclick="closePwaGuide()" style="height: 48px; box-shadow:none;">我知道了</button>
+    </div>
+</div>
 
 <script>
-    // 基础 PWA 与视差背景逻辑
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
     }
@@ -379,29 +393,25 @@
             const items = ref([]);
             const settings = ref({ interval_hours: 72, bark_url: '', bark_title: '', bark_body: '' });
             
-            const nowTime = ref(new Date()); // 每10秒自动刷新的响应式时间
+            const nowTime = ref(new Date()); 
             const isSubmitting = ref(false);
             const testingBark = ref(false);
             const logMode = ref('normal');
 
-            // 表单绑定对象
             const form = ref({ date: '', group: '', quantity: '' });
             const settingsForm = ref({ newItemName: '', interval_hours: 72, bark_url: '', bark_title: '', bark_body: '' });
             
-            // 弹窗状态
             const modal = ref({
                 log: { show: false, id: null, date: '', value: '' },
                 group: { show: false, id: null, name: '' }
             });
 
-            // 初始化获取本地时间格式
             const getLocalISOTime = () => {
                 const d = new Date();
                 d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
                 return d.toISOString().slice(0, 16);
             };
 
-            // 获取后端数据 (Axios)
             const fetchData = async () => {
                 try {
                     const res = await axios.get('/api/data');
@@ -409,27 +419,23 @@
                     items.value = res.data.items;
                     settings.value = res.data.settings;
                     
-                    // 顺便同步配置表单的默认值
                     settingsForm.value.interval_hours = settings.value.interval_hours;
                     settingsForm.value.bark_url = settings.value.bark_url;
                     settingsForm.value.bark_title = settings.value.bark_title;
                     settingsForm.value.bark_body = settings.value.bark_body;
 
-                    // 设置首页表单默认分组
                     if (items.value.length > 0 && !form.value.group) form.value.group = items.value[0].name;
                 } catch (e) {
                     console.error("加载数据失败", e);
                 }
             };
 
-            // Vue 挂载时执行
             onMounted(() => {
                 form.value.date = getLocalISOTime();
                 fetchData();
-                setInterval(() => { nowTime.value = new Date(); }, 10000); // 时钟引擎跳动
+                setInterval(() => { nowTime.value = new Date(); }, 10000); 
             });
 
-            // 切换标签
             const switchTab = (tab) => {
                 activeTab.value = tab;
                 window.scrollTo(0, 0);
@@ -438,7 +444,6 @@
                 window.history.replaceState({}, '', url);
             };
 
-            // 计算预计下轮时间 (首页表单实时预览)
             const nextRoundPreview = computed(() => {
                 if (!form.value.date) return '--';
                 const d = new Date(form.value.date);
@@ -447,10 +452,8 @@
                 return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
             });
 
-            // 统计大屏数据
             const totalQuantity = computed(() => records.value.reduce((sum, r) => sum + parseInt(r.quantity || 0), 0));
             
-            // 计算每个分组的最新记录ID (用于智能状态变色)
             const latestRecordIds = computed(() => {
                 const latest = new Set();
                 const seenGroups = new Set();
@@ -463,7 +466,6 @@
                 return latest;
             });
 
-            // 冷却中的数量统计
             const coolingCount = computed(() => {
                 let count = 0;
                 records.value.forEach(r => {
@@ -475,7 +477,6 @@
                 return count;
             });
 
-            // 核心：智能日志状态渲染 HTML
             const getRecordStatusHtml = (r) => {
                 if (!latestRecordIds.value.has(r.id)) {
                     return `<div style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-top: 2px;">本轮结束：${r.date}</div>`;
@@ -491,17 +492,15 @@
                 return `<div style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-top: 2px;">本轮结束：${r.date}</div>`;
             };
 
-            // 发送新记录 (0刷新)
             const addRecord = async () => {
                 isSubmitting.value = true;
                 await axios.post('/api/record', form.value);
                 await fetchData();
-                form.value.quantity = ''; // 清空数量
-                form.value.date = getLocalISOTime(); // 重置时间
+                form.value.quantity = ''; 
+                form.value.date = getLocalISOTime(); 
                 isSubmitting.value = false;
             };
 
-            // 日志操作模式切换
             const toggleLogMode = (m) => { logMode.value = logMode.value === m ? 'normal' : m; };
 
             const handleLogClick = async (e, r) => {
@@ -524,7 +523,6 @@
                 logMode.value = 'normal';
             };
 
-            // 配置页操作
             const saveSettings = async (actionStr) => {
                 const payload = { action: actionStr };
                 if (actionStr === 'add_item') {
