@@ -1,29 +1,16 @@
-# 1. 基础镜像
-FROM python:3.11-slim
+# 使用 Alpine 极简版 Linux 镜像
+FROM python:3.10-alpine
 
-# 2. 设置工作目录
+# 设置工作目录
 WORKDIR /app
 
-# 3. 设置环境变量
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV FLASK_ENV=production
-
-# 4. 安装基础依赖
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    python3-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# 5. 安装 Python 依赖
+# 复制依赖文件并安装 (使用阿里云加速并清除缓存)
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt gunicorn
+RUN pip install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple/ -r requirements.txt
 
-# 6. 复制项目代码
+# 复制项目代码
 COPY . .
 
-# 7. 暴露端口
+# 暴露端口并启动
 EXPOSE 5000
-
-# 8. 启动命令（使用 Gunicorn 提高并发稳定性）
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app", "--workers", "2", "--threads", "4"]
+CMD ["python", "app.py"]

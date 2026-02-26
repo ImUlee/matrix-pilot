@@ -4,7 +4,7 @@ import threading
 import requests
 from datetime import datetime, timedelta
 from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, session
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 
@@ -50,10 +50,10 @@ def init_db():
         try:
             with db.engine.connect() as conn:
                 result = conn.execute(text("PRAGMA table_info(settings)")).fetchall()
-                columns = [row[1] for row in result]
-                if 'bark_title' not in columns:
+                cols = [row[1] for row in result]
+                if 'bark_title' not in cols:
                     conn.execute(text("ALTER TABLE settings ADD COLUMN bark_title VARCHAR(100) DEFAULT 'MatrixPilot 提醒'"))
-                if 'bark_body' not in columns:
+                if 'bark_body' not in cols:
                     conn.execute(text("ALTER TABLE settings ADD COLUMN bark_body VARCHAR(255) DEFAULT '分组【{group}】预计下轮时间已到！'"))
                 
                 rec_result = conn.execute(text("PRAGMA table_info(record)")).fetchall()
@@ -62,7 +62,7 @@ def init_db():
                     conn.execute(text("ALTER TABLE record ADD COLUMN notified BOOLEAN DEFAULT 0"))
                 conn.commit()
         except Exception as e:
-            print(f"数据库补丁执行跳过: {e}")
+            pass
 
         if not Settings.query.first():
             db.session.add(Settings())
@@ -70,9 +70,6 @@ def init_db():
 
 init_db()
 
-# =========================================
-# 二、 权限拦截器 (Login Required)
-# =========================================
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -86,7 +83,7 @@ def serve_sw():
     return send_from_directory(app.static_folder, 'sw.js', mimetype='application/javascript')
 
 # =========================================
-# 三、 Bark 全局守护线程
+# 二、 Bark 守护线程
 # =========================================
 def notification_daemon():
     time.sleep(5) 
@@ -113,16 +110,16 @@ def notification_daemon():
                                 api_url = f"{settings.bark_url.rstrip('/')}/{title}/{body}?sound=minuet&group=MatrixPilot&isArchive=1"
                                 try:
                                     requests.get(api_url, timeout=10)
-                                except Exception as e:
-                                    print(f"Bark Push Error: {e}")
-        except Exception as e:
-            print(f"Daemon Loop Error: {e}")
+                                except:
+                                    pass
+        except:
+            pass
         time.sleep(60) 
 
 threading.Thread(target=notification_daemon, daemon=True).start()
 
 # =========================================
-# 四、 路由逻辑
+# 三、 基础页面路由
 # =========================================
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -142,114 +139,137 @@ def logout():
     session.pop('logged_in', None)
     return redirect(url_for('login'))
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 @login_required
 def index():
-    settings = Settings.query.first()
-    if request.method == 'POST':
-        date_str = request.form.get('date').replace('T', ' ')
-        group_name = request.form.get('group')
-        quantity = request.form.get('quantity')
-        
-        dt_obj = datetime.strptime(date_str, '%Y-%m-%d %H:%M')
-        next_dt = dt_obj + timedelta(hours=settings.interval_hours)
-        next_time_str = next_dt.strftime('%Y-%m-%d %H:%M')
-        
-        new_record = Record(date=date_str, next_time=next_time_str, data={group_name: quantity}, notified=False)
-        db.session.add(new_record)
-        db.session.commit()
-        return redirect(url_for('index'))
+    # 彻底改用 Vue 单页，后端只负责首次下发空壳 HTML
+    return render_template('index.html')
 
+
+# =========================================
+# 四、 API 接口 (供 Vue.js + Axios 调用)
+# =========================================
+@app.route('/api/data', methods=['GET'])
+@login_required
+def get_data():
+    settings = Settings.query.first()
     items = Item.query.all()
     records = Record.query.order_by(Record.date.desc()).all()
-    return render_template('index.html', 
-                           items=items, 
-                           records=records, 
-                           interval_hours=settings.interval_hours,
-                           bark_url=settings.bark_url,
-                           bark_title=settings.bark_title,
-                           bark_body=settings.bark_body)
+    
+    return jsonify({
+        'settings': {
+            'interval_hours': settings.interval_hours,
+            'bark_url': settings.bark_url or '',
+            'bark_title': settings.bark_title or '',
+            'bark_body': settings.bark_body or ''
+        },
+        'items': [{'id': i.id, 'name': i.name} for i in items],
+        'records': [{
+            'id': r.id, 
+            'date': r.date, 
+            'next_time': r.next_time, 
+            'group': list(r.data.keys())[0] if r.data else '',
+            'quantity': list(r.data.values())[0] if r.data else 0
+        } for r in records]
+    })
 
-@app.route('/edit/<int:id>', methods=['POST'])
+@app.route('/api/record', methods=['POST'])
 @login_required
-def edit_record(id):
+def add_record():
+    data = request.json
+    settings = Settings.query.first()
+    date_str = data.get('date').replace('T', ' ')
+    dt_obj = datetime.strptime(date_str, '%Y-%m-%d %H:%M')
+    next_dt = dt_obj + timedelta(hours=settings.interval_hours)
+    
+    new_record = Record(
+        date=date_str, 
+        next_time=next_dt.strftime('%Y-%m-%d %H:%M'), 
+        data={data.get('group'): data.get('quantity')}, 
+        notified=False
+    )
+    db.session.add(new_record)
+    db.session.commit()
+    return jsonify({'success': True})
+
+@app.route('/api/record/<int:id>', methods=['PUT'])
+@login_required
+def edit_record_api(id):
+    data = request.json
     record = Record.query.get_or_404(id)
     settings = Settings.query.first()
-    new_date = request.form.get('date').replace('T', ' ')
-    new_val = request.form.get('value')
+    new_date = data.get('date').replace('T', ' ')
+    
     record.date = new_date
     record.next_time = (datetime.strptime(new_date, '%Y-%m-%d %H:%M') + timedelta(hours=settings.interval_hours)).strftime('%Y-%m-%d %H:%M')
     record.notified = False
+    
     old_key = list(record.data.keys())[0]
-    record.data = {old_key: new_val}
+    record.data = {old_key: data.get('value')}
     db.session.commit()
-    return redirect(url_for('index', tab='log'))
+    return jsonify({'success': True})
 
-@app.route('/delete_record/<int:id>', methods=['POST'])
+@app.route('/api/record/<int:id>', methods=['DELETE'])
 @login_required
-def delete_record(id):
+def delete_record_api(id):
     db.session.delete(Record.query.get_or_404(id))
     db.session.commit()
-    return redirect(url_for('index', tab='log'))
+    return jsonify({'success': True})
 
-@app.route('/settings', methods=['POST'])
+@app.route('/api/settings', methods=['POST'])
 @login_required
-def update_settings():
-    action = request.form.get('action')
+def save_settings():
+    data = request.json
+    action = data.get('action')
     settings = Settings.query.first()
     
     if action == 'add_item':
-        name = request.form.get('name')
+        name = data.get('name')
         if name and not Item.query.filter_by(name=name).first():
             db.session.add(Item(name=name))
-            
     elif action == 'edit_item':
-        item = Item.query.get(request.form.get('id'))
-        new_name = request.form.get('name')
+        item = Item.query.get(data.get('id'))
+        new_name = data.get('name')
         if item and new_name and item.name != new_name:
             if not Item.query.filter_by(name=new_name).first():
                 old_name = item.name
                 item.name = new_name
-                # 同步修改历史日志数据中的分组名称，防止断层
+                # 同步迁移历史记录
                 for r in Record.query.all():
                     if r.data and old_name in r.data:
                         new_data = dict(r.data)
                         new_data[new_name] = new_data.pop(old_name)
                         r.data = new_data
-                        
     elif action == 'delete_item':
-        item = Item.query.get(request.form.get('id'))
+        item = Item.query.get(data.get('id'))
         if item: db.session.delete(item)
-        
     elif action == 'update_interval':
-        settings.interval_hours = int(request.form.get('interval_hours'))
-        
+        settings.interval_hours = int(data.get('interval_hours'))
     elif action == 'update_bark':
-        settings.bark_url = request.form.get('bark_url')
-        settings.bark_title = request.form.get('bark_title')
-        settings.bark_body = request.form.get('bark_body')
+        settings.bark_url = data.get('bark_url')
+        settings.bark_title = data.get('bark_title')
+        settings.bark_body = data.get('bark_body')
         
     db.session.commit()
-    return redirect(url_for('index', tab='settings'))
+    return jsonify({'success': True})
 
-@app.route('/test_bark', methods=['POST'])
+@app.route('/api/test_bark', methods=['POST'])
 @login_required
-def test_bark():
-    url = request.form.get('bark_url')
-    if not url:
-        return "请先填写 Bark URL", 400
+def test_bark_api():
+    data = request.json
+    url = data.get('bark_url')
+    if not url: return jsonify({'error': '请先填写 Bark URL'}), 400
     
-    title = request.form.get('bark_title', '测试').replace("{group}", "通道测试").replace("{time}", datetime.now().strftime('%H:%M'))
-    body = request.form.get('bark_body', '成功连通！').replace("{group}", "通道测试").replace("{time}", datetime.now().strftime('%H:%M'))
-    
+    title = data.get('bark_title', '测试').replace("{group}", "通道测试").replace("{time}", datetime.now().strftime('%H:%M'))
+    body = data.get('bark_body', '成功连通！').replace("{group}", "通道测试").replace("{time}", datetime.now().strftime('%H:%M'))
     api_url = f"{url.rstrip('/')}/{title}/{body}?sound=minuet&group=MatrixPilot&isArchive=1"
     try:
         r = requests.get(api_url, timeout=5)
         if r.status_code == 200:
-            return "测试推送成功，请查看手机！", 200
-        return f"接口拒绝请求 (HTTP {r.status_code})", 400
+            return jsonify({'msg': '测试推送成功，请查看手机！'})
+        return jsonify({'error': f'接口拒绝请求 (HTTP {r.status_code})'}), 400
     except Exception as e:
-        return f"无法连接到 Bark: {str(e)}", 400
+        return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
