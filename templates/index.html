@@ -123,8 +123,8 @@
             <div class="hl-row">
                 <div class="hl-col-6">
                     <div class="hl-card">
-                        <div class="hl-num" style="color: var(--text-main);">{{ coolingCount }}</div>
-                        <div class="hl-label">冷却分组数量</div>
+                        <div class="hl-num" style="color: var(--ios-orange);">{{ warningCount }}</div>
+                        <div class="hl-label">等待执行分组</div>
                     </div>
                 </div>
                 <div class="hl-col-6">
@@ -348,20 +348,8 @@
 </div>
 {% endraw %}
 
-<div class="custom-modal-overlay" id="pwaGuideModal" onclick="closePwaGuide()">
-    <div class="pop-in" onclick="event.stopPropagation()" style="text-align: center;">
-        <ion-icon name="share-outline" style="font-size: 48px; color: var(--primary); margin-bottom: 16px;"></ion-icon>
-        <h3 style="margin-top:0; margin-bottom:12px; font-size:18px;">如何添加到主屏幕？</h3>
-        <p style="color:var(--text-sub); font-size:14px; margin-bottom:24px; line-height:1.6; text-align: left;">
-            1. 点击屏幕下方菜单栏的 <b>分享</b> 图标<br>
-            2. 在弹出的菜单中下滑，选择 <b>“添加到主屏幕”</b><br>
-            3. 在右上角点击 <b>“添加”</b> 即可完成！
-        </p>
-        <button class="ios-btn-primary" onclick="closePwaGuide()" style="height: 48px; box-shadow:none;">我知道了</button>
-    </div>
-</div>
-
 <script>
+    // PWA & Background Effects
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
     }
@@ -382,7 +370,7 @@
     }, { passive: true });
 
     // =========================================
-    // Vue 3 SPA 核心驱动引擎
+    // Vue 3 SPA Application
     // =========================================
     const { createApp, ref, computed, onMounted } = Vue;
 
@@ -426,7 +414,7 @@
 
                     if (items.value.length > 0 && !form.value.group) form.value.group = items.value[0].name;
                 } catch (e) {
-                    console.error("加载数据失败", e);
+                    console.error("Fetch Data Error:", e);
                 }
             };
 
@@ -466,12 +454,14 @@
                 return latest;
             });
 
-            const coolingCount = computed(() => {
+            // 核心修改：等待执行的分组统计 (过滤出已过期的)
+            const warningCount = computed(() => {
                 let count = 0;
                 records.value.forEach(r => {
                     if (latestRecordIds.value.has(r.id) && r.next_time && r.next_time !== '--') {
                         const target = new Date(r.next_time.replace(' ', 'T') + ':00');
-                        if (target > nowTime.value) count++;
+                        // 当目标时间小于当前时间，说明任务需要执行了！
+                        if (target <= nowTime.value) count++;
                     }
                 });
                 return count;
@@ -571,7 +561,7 @@
                 activeTab, switchTab,
                 records, items, settings, form, settingsForm,
                 isSubmitting, testingBark, logMode, modal,
-                nextRoundPreview, totalQuantity, coolingCount,
+                nextRoundPreview, totalQuantity, warningCount,
                 getRecordStatusHtml, addRecord, toggleLogMode, handleLogClick, saveLogEdit,
                 saveSettings, openGroupModal, deleteGroup, testBark
             };
