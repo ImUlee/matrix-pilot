@@ -26,12 +26,9 @@
             --modal-overlay: rgba(0, 0, 0, 0.5);
             --top-blur-bg: rgba(244, 243, 249, 0.75);
             --primary: #007AFF;
-            --primary-shadow: rgba(0, 122, 255, 0.15);
             --danger: #FF3B30;
             --success: #34C759;
-            --offline: #A8A8A8;
             --ios-orange: #FF9500;
-            --ios-purple: #AF52DE;
             --nav-bg: rgba(69, 69, 69, 0.85); 
             --nav-item-bg: rgba(0, 0, 0, 0.25);
             --nav-text-normal: rgba(255, 255, 255, 0.5);
@@ -48,11 +45,8 @@
                 --modal-overlay: rgba(0, 0, 0, 0.8);
                 --top-blur-bg: rgba(0, 0, 0, 0.75);
                 --primary: #0A66C2; 
-                --primary-shadow: rgba(0, 0, 0, 0.3);
                 --success: #30D158;
-                --offline: #636366;
                 --ios-orange: #FF9F0A;
-                --ios-purple: #BF5AF2;
                 --nav-bg: rgba(118, 118, 128, 0.24);
                 --nav-item-bg: rgba(0, 0, 0, 0.2);
                 --nav-text-normal: rgba(255, 255, 255, 0.5);
@@ -100,9 +94,10 @@
             height: 52px; font-size: 14px; font-weight: 500; width: 100%; 
             cursor: pointer; transition: opacity 0.2s; white-space: nowrap; 
             display: flex; justify-content: center; align-items: center; 
-            box-shadow: 0 4px 12px var(--primary-shadow);
+            box-shadow: none;
         }
         .ios-btn-primary:active { opacity: 0.8; }
+        .ios-btn-primary.loading { opacity: 0.5; pointer-events: none; }
 
         .hl-card { 
             background: var(--card-bg); 
@@ -192,13 +187,17 @@
         .custom-modal-overlay.active { display: flex; opacity: 1; }
         .pop-in { background: var(--card-bg); border-radius: 24px; width: 85%; max-width: 380px; padding: 24px; transform: scale(0.9); transition: 0.3s; box-shadow: 0 10px 40px rgba(0,0,0,0.15); box-sizing: border-box;}
         .custom-modal-overlay.active .pop-in { transform: scale(1); }
+        
+        /* AJAX 刷新动画 */
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .spin { animation: spin 1s linear infinite; }
     </style>
 </head>
 <body>
 
     <div id="dynamic-top-mask" class="top-blur-mask"></div>
 
-    <div class="scale-container">
+    <div class="scale-container" id="app-container">
 
         <div id="section-overview" class="page-section active">
             <div class="page-header"><h1 class="big-title">Today</h1></div>
@@ -226,7 +225,7 @@
                 </div>
             </div>
 
-            <form action="/" method="POST" style="margin: 0;">
+            <form action="/" method="POST" class="ajax-form" style="margin: 0;">
                 <div class="apple-card" style="margin-top: 0;">
                     <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
                         <div style="background: var(--app-bg); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
@@ -257,7 +256,7 @@
                 <div style="padding: 0;">
                     <button type="submit" class="ios-btn-primary" style="background: var(--card-bg); color: var(--primary); box-shadow: none;">
                         <ion-icon name="add-circle" style="font-size: 22px; margin-right: 8px;"></ion-icon>
-                        保存记录
+                        <span>保存记录</span>
                     </button>
                 </div>
             </form>
@@ -331,9 +330,9 @@
                 <details class="settings-card" id="details-groups">
                     <summary class="settings-summary"><div class="summary-title">管理分组</div><div class="summary-status"><span>{{ items|length }} 个分组</span><span class="arrow-icon">▼</span></div></summary>
                     <div class="details-content">
-                        <form action="/settings" method="POST" class="compact-input-group">
+                        <form action="/settings" method="POST" class="compact-input-group ajax-form">
                             <input type="hidden" name="action" value="add_item"><input type="text" name="name" placeholder="新分组名称" required class="settings-input">
-                            <button type="submit" class="ios-btn-primary" style="height: 42px; width: auto; padding: 0 18px; box-shadow:none;">添加</button>
+                            <button type="submit" class="ios-btn-primary" style="height: 42px; width: auto; padding: 0 18px; box-shadow:none;"><span>添加</span></button>
                         </form>
                         <div style="background: var(--app-bg); border-radius: 15px; overflow: hidden; padding: 0 16px;">
                             {% for item in items %}
@@ -348,9 +347,9 @@
                 <details class="settings-card" id="details-interval">
                     <summary class="settings-summary"><div class="summary-title">时间周期</div><div class="summary-status"><span style="color: var(--primary); font-weight: 700;">{{ interval_hours }}h</span><span class="arrow-icon">▼</span></div></summary>
                     <div class="details-content">
-                        <form action="/settings" method="POST" class="compact-input-group">
+                        <form action="/settings" method="POST" class="compact-input-group ajax-form">
                             <input type="hidden" name="action" value="update_interval"><input type="number" name="interval_hours" value="{{ interval_hours }}" required class="settings-input">
-                            <button type="submit" class="ios-btn-primary" style="height: 42px; width: auto; padding: 0 18px; box-shadow:none;">保存</button>
+                            <button type="submit" class="ios-btn-primary" style="height: 42px; width: auto; padding: 0 18px; box-shadow:none;"><span>保存</span></button>
                         </form>
                     </div>
                 </details>
@@ -360,7 +359,7 @@
             <details class="settings-card" id="details-bark">
                 <summary class="settings-summary"><div class="summary-title">Bark 推送配置</div><div class="summary-status"><span>{% if bark_url %}已配置{% else %}未配置{% endif %}</span><span class="arrow-icon">▼</span></div></summary>
                 <div class="details-content">
-                    <form id="barkForm" action="/settings" method="POST" style="display:flex; flex-direction:column; gap:12px; padding:16px 0;">
+                    <form id="barkForm" action="/settings" method="POST" class="ajax-form" style="display:flex; flex-direction:column; gap:12px; padding:16px 0;">
                         <input type="hidden" name="action" value="update_bark">
                         <label style="font-size:12px; color:var(--text-sub); font-weight:600;">Bark API 地址</label>
                         <input type="text" name="bark_url" value="{{ bark_url or '' }}" placeholder="https://api.day.app/Key/" class="ios-input" style="background:var(--app-bg);">
@@ -370,8 +369,8 @@
                         <textarea name="bark_body" class="ios-input" style="background:var(--app-bg); height:80px; padding:12px; resize:none; line-height:1.4;">{{ bark_body or '分组【{group}】预计下轮时间已到！' }}</textarea>
                         
                         <div style="display: flex; gap: 10px; margin-top: 8px;">
-                            <button type="button" class="ios-btn-primary" style="background: var(--app-bg); color: var(--primary); box-shadow: none; flex: 1;" onclick="testBark()">测试推送</button>
-                            <button type="submit" class="ios-btn-primary" style="flex: 2; box-shadow: none;">保存配置</button>
+                            <button type="button" class="ios-btn-primary" style="background: var(--app-bg); color: var(--primary); box-shadow: none; flex: 1;" onclick="testBark(this)">测试推送</button>
+                            <button type="submit" class="ios-btn-primary" style="flex: 2; box-shadow: none;"><span>保存配置</span></button>
                         </div>
                     </form>
                 </div>
@@ -388,9 +387,7 @@
             </div>
         </div>
 
-    </div> 
-
-    <nav class="bottom-nav">
+    </div> <nav class="bottom-nav">
         <div class="nav-tabs-c">
             <a class="nav-item-c active" onclick="switchTab('overview', this)">总览</a>
             <a class="nav-item-c" onclick="switchTab('log', this)">日志</a>
@@ -404,7 +401,7 @@
                 <h5 style="font-weight:bold; margin:0; font-size: 20px;">修改数据</h5>
                 <ion-icon name="close-circle" style="font-size:28px; color:var(--text-sub); cursor:pointer;" onclick="closeModal()"></ion-icon>
             </div>
-            <form id="editForm" method="POST">
+            <form id="editForm" method="POST" class="ajax-form">
                 <input type="hidden" id="modalKey" name="key">
                 <div style="margin-bottom:16px;">
                     <label style="font-size:12px; color:var(--text-sub); font-weight: 600; display: block; margin-bottom: 6px;">日期时间</label>
@@ -416,7 +413,7 @@
                 </div>
                 <div style="display: flex; gap: 12px;">
                     <button type="button" class="ios-btn-primary" style="background: transparent; color: var(--primary); border: 1.5px solid var(--primary); height: 52px; box-shadow: none;" onclick="closeModal()">取消</button>
-                    <button type="submit" class="ios-btn-primary" style="height: 52px; box-shadow: none;">保存修改</button>
+                    <button type="submit" class="ios-btn-primary" style="height: 52px; box-shadow: none;"><span>保存修改</span></button>
                 </div>
             </form>
         </div>
@@ -428,7 +425,7 @@
                 <h5 style="font-weight:bold; margin:0; font-size: 20px;">编辑分组</h5>
                 <ion-icon name="close-circle" style="font-size:28px; color:var(--text-sub); cursor:pointer;" onclick="closeGroupModal()"></ion-icon>
             </div>
-            <form action="/settings" method="POST" id="groupEditForm">
+            <form action="/settings" method="POST" id="groupEditForm" class="ajax-form">
                 <input type="hidden" name="action" value="edit_item">
                 <input type="hidden" id="modalGroupId" name="id">
                 <div style="margin-bottom:24px;">
@@ -437,14 +434,14 @@
                 </div>
                 <div style="display: flex; gap: 12px; margin-bottom: 12px;">
                     <button type="button" class="ios-btn-primary" style="background: transparent; color: var(--text-main); border: 1px solid var(--border-color); height: 52px; box-shadow: none; flex: 1;" onclick="closeGroupModal()">取消</button>
-                    <button type="submit" class="ios-btn-primary" style="height: 52px; box-shadow: none; flex: 1;">保存修改</button>
+                    <button type="submit" class="ios-btn-primary" style="height: 52px; box-shadow: none; flex: 1;"><span>保存修改</span></button>
                 </div>
             </form>
-            <form action="/settings" method="POST" style="margin:0;" onsubmit="return confirm('⚠️ 确定要彻底删除该分组吗？此操作无法恢复！');">
+            <form action="/settings" method="POST" style="margin:0;" class="ajax-form">
                 <input type="hidden" name="action" value="delete_item">
                 <input type="hidden" id="modalGroupDelId" name="id">
-                <button type="submit" class="ios-btn-primary" style="background: rgba(255, 59, 48, 0.1); color: var(--danger); height: 52px; box-shadow: none; width: 100%;">
-                    <ion-icon name="trash" style="margin-right: 6px; font-size: 18px;"></ion-icon> 删除该分组
+                <button type="submit" class="ios-btn-primary" style="background: rgba(255, 59, 48, 0.1); color: var(--danger); height: 52px; box-shadow: none; width: 100%;" onclick="return confirm('⚠️ 确定要彻底删除该分组吗？此操作无法恢复！');">
+                    <span><ion-icon name="trash" style="margin-right: 6px; font-size: 18px; vertical-align: text-bottom;"></ion-icon>删除该分组</span>
                 </button>
             </form>
         </div>
@@ -463,7 +460,7 @@
         </div>
     </div>
 
-    <form id="globalDeleteForm" method="POST" style="display:none;"></form>
+    <form id="globalDeleteForm" method="POST" style="display:none;" class="ajax-form"></form>
 
     <script>
         if ('serviceWorker' in navigator) {
@@ -472,101 +469,108 @@
             });
         }
 
-        // =========================================
-        // 黑科技：SPA无感异步提交引擎 (彻底消灭页面刷新)
-        // =========================================
-        document.addEventListener('submit', async function(e) {
-            if (e.defaultPrevented) return; // 尊重内联的 confirm 弹窗取消操作
+        // ===================================================================
+        // 🚀 核心黑科技：SPA 无刷新异步请求引擎 (The SPA Hijacker)
+        // ===================================================================
+        function initAjaxForms() {
+            document.querySelectorAll('form.ajax-form').forEach(form => {
+                // 防止重复绑定
+                if (form.dataset.ajaxBound) return;
+                form.dataset.ajaxBound = "true";
 
-            const form = e.target;
-            // 排除退出登录表单，保留真实的重定向跳转
-            if (form.getAttribute('action') === '/logout') return;
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault(); // 【魔法核心】拦截浏览器默认的闪白刷新！
 
-            e.preventDefault(); // 拦截原生刷新行为
+                    const btn = form.querySelector('button[type="submit"]');
+                    const span = btn ? btn.querySelector('span') : null;
+                    const originalText = span ? span.innerHTML : '';
 
-            // 1. 瞬间快照：记录当前所有打开的 details 标签 ID
-            const openDetails = [];
-            document.querySelectorAll('details').forEach(el => {
-                if (el.id && el.open) openDetails.push(el.id);
-            });
-
-            // 2. 按钮加载状态视觉反馈
-            const btn = e.submitter;
-            const originalText = btn ? btn.innerHTML : '';
-            if (btn) {
-                btn.style.opacity = '0.5';
-                btn.style.pointerEvents = 'none';
-            }
-
-            // 3. 组装数据
-            const formData = new FormData(form);
-            if (btn && btn.name) formData.append(btn.name, btn.value);
-
-            try {
-                // 4. 异步向后端发送数据
-                const res = await fetch(form.action, {
-                    method: form.method || 'POST',
-                    body: formData
-                });
-
-                if (res.ok) {
-                    const html = await res.text();
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-
-                    // 5. 核心魔法：只替换数据容器内的内容，保持外部滚动和状态不变
-                    ['section-overview', 'section-log', 'section-settings'].forEach(id => {
-                        const newSection = doc.getElementById(id);
-                        const oldSection = document.getElementById(id);
-                        if (newSection && oldSection) {
-                            oldSection.innerHTML = newSection.innerHTML;
-                        }
-                    });
-
-                    // 6. 无缝复原：将之前打开的 details 重新撑开
-                    openDetails.forEach(id => {
-                        const el = document.getElementById(id);
-                        if (el) el.open = true;
-                    });
-
-                    // 7. 关闭所有由于操作唤起的弹窗
-                    closeModal();
-                    closeGroupModal();
-
-                    // 8. 重新执行 JS 数据绑定与本地时间矫正
-                    const dateInput = document.getElementById('dateInput');
-                    if (dateInput) {
-                        const localNow = new Date();
-                        localNow.setMinutes(localNow.getMinutes() - localNow.getTimezoneOffset());
-                        dateInput.value = localNow.toISOString().slice(0, 16);
+                    // 1. 提交时的视觉反馈（按钮变灰并转圈）
+                    if (btn && span) {
+                        btn.classList.add('loading');
+                        span.innerHTML = '<ion-icon name="sync-outline" class="spin" style="margin-right:6px; font-size:20px; vertical-align:text-bottom;"></ion-icon>处理中...';
                     }
-                    
-                    calculateNextRound();
-                    updateDynamicStatuses();
-                }
-            } catch (error) {
-                console.error(error);
-                alert('请求失败，请检查网络');
-            } finally {
-                // 9. 释放按钮状态
-                if (btn) {
-                    btn.style.opacity = '1';
-                    btn.style.pointerEvents = 'auto';
-                    btn.innerHTML = originalText;
-                }
-            }
-        });
 
-        // 原 Bark 测试走独立逻辑，不受影响
-        async function testBark() {
+                    // 2. 拍下当前页面状态的“快照”
+                    const openDetails = [];
+                    document.querySelectorAll('details').forEach(el => {
+                        if (el.id && el.open) openDetails.push(el.id);
+                    });
+                    const scrollY = window.scrollY;
+
+                    // 3. 后台发送异步请求
+                    try {
+                        const formData = new FormData(form);
+                        const response = await fetch(form.action, {
+                            method: form.method || 'POST',
+                            body: formData
+                        });
+
+                        if (response.ok) {
+                            const html = await response.text();
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(html, 'text/html');
+
+                            // 4. 只替换数据主体，不刷新整个页面！
+                            const newContainer = doc.getElementById('app-container');
+                            const oldContainer = document.getElementById('app-container');
+                            
+                            if (newContainer && oldContainer) {
+                                oldContainer.innerHTML = newContainer.innerHTML;
+                            }
+
+                            // 5. 瞬间复原页面状态（展开的面板和滚动条）
+                            openDetails.forEach(id => {
+                                const el = document.getElementById(id);
+                                if (el) el.open = true;
+                            });
+                            window.scrollTo(0, scrollY);
+
+                            // 6. 关闭所有可能打开的弹窗
+                            closeModal();
+                            closeGroupModal();
+
+                            // 7. 重新挂载时间校验和事件监听
+                            initDynamicTime();
+                            calculateNextRound();
+                            updateDynamicStatuses();
+                            initAjaxForms(); // 为新生成的DOM重新绑定表单劫持
+                        } else {
+                            alert('请求失败，请检查网络或刷新重试。');
+                        }
+                    } catch (error) {
+                        console.error('AJAX Submit Error:', error);
+                        alert('发生错误，请稍后重试。');
+                    } finally {
+                        // 释放按钮状态
+                        if (btn && span) {
+                            btn.classList.remove('loading');
+                            span.innerHTML = originalText;
+                        }
+                    }
+                });
+            });
+        }
+
+
+        // Bark 测试走独立请求
+        async function testBark(btn) {
             const form = document.getElementById('barkForm');
             const formData = new FormData(form);
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = '<ion-icon name="sync-outline" class="spin"></ion-icon>';
+            btn.style.pointerEvents = 'none';
+            
             try {
                 const response = await fetch('/test_bark', { method: 'POST', body: formData });
                 const text = await response.text();
                 alert(text);
             } catch (err) {
                 alert("请求失败，请检查网络或配置");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.style.pointerEvents = 'auto';
             }
         }
 
@@ -641,13 +645,17 @@
             }, { passive: true });
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        function initDynamicTime() {
             const dateInput = document.getElementById('dateInput');
             if (dateInput) {
                 const localNow = new Date();
                 localNow.setMinutes(localNow.getMinutes() - localNow.getTimezoneOffset());
                 dateInput.value = localNow.toISOString().slice(0, 16);
             }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initDynamicTime();
 
             const urlParams = new URLSearchParams(window.location.search);
             const activeTab = urlParams.get('tab');
@@ -659,8 +667,10 @@
                 switchTab(activeTab, targetEl);
             }
             
+            initAjaxForms(); // 启动SPA引擎
             calculateNextRound();
             updateDynamicStatuses();
+            
             setInterval(updateDynamicStatuses, 10000); 
         });
 
@@ -671,6 +681,7 @@
             el.classList.add('active');
             window.scrollTo(0, 0);
             
+            // 切换标签时同步修改 URL，但不刷新页面
             const url = new URL(window.location);
             url.searchParams.set('tab', id);
             window.history.replaceState({}, '', url);
@@ -720,7 +731,7 @@
                 if (confirm('⚠️ 确定要彻底删除这条日志记录吗？')) {
                     const f = document.getElementById('globalDeleteForm');
                     f.action = '/delete_record/' + id; 
-                    // 重要：使用 dispatchEvent 触发自定义的全局 Ajax 引擎，避免原生的直接刷新
+                    // 派发原生 submit 事件，让我们的 Ajax 引擎接管它
                     f.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
                 }
             }
