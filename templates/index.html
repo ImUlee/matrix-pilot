@@ -345,7 +345,6 @@
                         </div>
                     </div>
                 </details>
-                
                 <details class="settings-card" id="details-interval">
                     <summary class="settings-summary"><div class="summary-title">时间周期</div><div class="summary-status"><span style="color: var(--primary); font-weight: 700;">{{ interval_hours }}h</span><span class="arrow-icon">▼</span></div></summary>
                     <div class="details-content">
@@ -474,39 +473,91 @@
         }
 
         // =========================================
-        // 核心亮点：页面状态无缝恢复引擎 (State Persistence)
+        // 黑科技：SPA无感异步提交引擎 (彻底消灭页面刷新)
         // =========================================
-        function savePageState() {
+        document.addEventListener('submit', async function(e) {
+            if (e.defaultPrevented) return; // 尊重内联的 confirm 弹窗取消操作
+
+            const form = e.target;
+            // 排除退出登录表单，保留真实的重定向跳转
+            if (form.getAttribute('action') === '/logout') return;
+
+            e.preventDefault(); // 拦截原生刷新行为
+
+            // 1. 瞬间快照：记录当前所有打开的 details 标签 ID
             const openDetails = [];
-            // 抓取当前所有被展开的 details 标签 ID
             document.querySelectorAll('details').forEach(el => {
-                if (el.id && el.open) {
-                    openDetails.push(el.id);
-                }
+                if (el.id && el.open) openDetails.push(el.id);
             });
-            sessionStorage.setItem('mp_open_details', JSON.stringify(openDetails));
-            sessionStorage.setItem('mp_scroll_pos', window.scrollY);
-        }
 
-        function restorePageState() {
+            // 2. 按钮加载状态视觉反馈
+            const btn = e.submitter;
+            const originalText = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.style.opacity = '0.5';
+                btn.style.pointerEvents = 'none';
+            }
+
+            // 3. 组装数据
+            const formData = new FormData(form);
+            if (btn && btn.name) formData.append(btn.name, btn.value);
+
             try {
-                const openDetails = JSON.parse(sessionStorage.getItem('mp_open_details') || '[]');
-                openDetails.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.open = true; // 重新展开
+                // 4. 异步向后端发送数据
+                const res = await fetch(form.action, {
+                    method: form.method || 'POST',
+                    body: formData
                 });
-                
-                const scrollPos = sessionStorage.getItem('mp_scroll_pos');
-                if (scrollPos) {
-                    // 等待微小延迟确保 DOM 撑开后，跳回原滚动高度
-                    setTimeout(() => window.scrollTo(0, parseInt(scrollPos)), 10);
-                    // 用完即删，防止用户正常返回时也被拉扯
-                    sessionStorage.removeItem('mp_scroll_pos'); 
+
+                if (res.ok) {
+                    const html = await res.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+
+                    // 5. 核心魔法：只替换数据容器内的内容，保持外部滚动和状态不变
+                    ['section-overview', 'section-log', 'section-settings'].forEach(id => {
+                        const newSection = doc.getElementById(id);
+                        const oldSection = document.getElementById(id);
+                        if (newSection && oldSection) {
+                            oldSection.innerHTML = newSection.innerHTML;
+                        }
+                    });
+
+                    // 6. 无缝复原：将之前打开的 details 重新撑开
+                    openDetails.forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.open = true;
+                    });
+
+                    // 7. 关闭所有由于操作唤起的弹窗
+                    closeModal();
+                    closeGroupModal();
+
+                    // 8. 重新执行 JS 数据绑定与本地时间矫正
+                    const dateInput = document.getElementById('dateInput');
+                    if (dateInput) {
+                        const localNow = new Date();
+                        localNow.setMinutes(localNow.getMinutes() - localNow.getTimezoneOffset());
+                        dateInput.value = localNow.toISOString().slice(0, 16);
+                    }
+                    
+                    calculateNextRound();
+                    updateDynamicStatuses();
                 }
-            } catch (e) {}
-        }
+            } catch (error) {
+                console.error(error);
+                alert('请求失败，请检查网络');
+            } finally {
+                // 9. 释放按钮状态
+                if (btn) {
+                    btn.style.opacity = '1';
+                    btn.style.pointerEvents = 'auto';
+                    btn.innerHTML = originalText;
+                }
+            }
+        });
 
-
+        // 原 Bark 测试走独立逻辑，不受影响
         async function testBark() {
             const form = document.getElementById('barkForm');
             const formData = new FormData(form);
@@ -605,35 +656,20 @@
                 let targetEl = tabItems[0];
                 if (activeTab === 'log') targetEl = tabItems[1];
                 if (activeTab === 'settings') targetEl = tabItems[2];
-                // 传参 true 阻止初始化切换 Tab 时的默认滚动，防止覆盖掉我们的记忆位置
-                switchTab(activeTab, targetEl, true);
+                switchTab(activeTab, targetEl);
             }
-            
-            // 页面加载完毕后立刻执行状态恢复
-            restorePageState();
-
-            // 为页面上所有的表单绑定提交事件：在提交数据的瞬间拍下快照
-            document.querySelectorAll('form').forEach(form => {
-                form.addEventListener('submit', () => {
-                    savePageState();
-                });
-            });
             
             calculateNextRound();
             updateDynamicStatuses();
             setInterval(updateDynamicStatuses, 10000); 
         });
 
-        // 增加了 preventScroll 参数，应对初始加载
-        function switchTab(id, el, preventScroll = false) {
+        function switchTab(id, el) {
             document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-item-c').forEach(t => t.classList.remove('active'));
             document.getElementById('section-' + id).classList.add('active');
             el.classList.add('active');
-            
-            if (!preventScroll) {
-                window.scrollTo(0, 0); // 正常手动点击 Tab 依然会回到顶部
-            }
+            window.scrollTo(0, 0);
             
             const url = new URL(window.location);
             url.searchParams.set('tab', id);
@@ -683,7 +719,9 @@
                 event.preventDefault(); 
                 if (confirm('⚠️ 确定要彻底删除这条日志记录吗？')) {
                     const f = document.getElementById('globalDeleteForm');
-                    f.action = '/delete_record/' + id; f.submit();
+                    f.action = '/delete_record/' + id; 
+                    // 重要：使用 dispatchEvent 触发自定义的全局 Ajax 引擎，避免原生的直接刷新
+                    f.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
                 }
             }
         }
