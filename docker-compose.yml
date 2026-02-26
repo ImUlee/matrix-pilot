@@ -6,6 +6,6 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      # 将数据库文件映射到宿主机，防止数据丢失。
+      # 将数据库文件映射到宿主机，防止数据丢失
       - ./matrix_pilot.db:/app/instance/matrix_pilot.db
     restart: always
