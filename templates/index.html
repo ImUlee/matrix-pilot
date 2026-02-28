@@ -21,18 +21,15 @@
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
         [v-cloak] { display: none !important; }
 
-        /* =========================================
-           一、 核心色彩系统
-           ========================================= */
         :root {
             --app-bg: #f4f3f9; --card-bg: #FFFFFF; --text-main: #1C1C1E; --text-sub: #A8A8A8;
             --border-color: #e5e5ea; --modal-overlay: rgba(0, 0, 0, 0.5);
             --top-blur-bg: rgba(244, 243, 249, 0.75);
             --primary: #007AFF; --primary-shadow: rgba(0, 122, 255, 0.15);
             --danger: #FF3B30; --success: #34C759; --ios-orange: #FF9500;
-            --nav-bg: rgba(69, 69, 69, 0.85); --nav-item-bg: rgba(0, 0, 0, 0.25);
-            --nav-text-normal: rgba(255, 255, 255, 0.5);
-            --nav-bg-active: rgba(255, 255, 255, 0.15); --nav-text-active: #FFFFFF;
+            --nav-bg: #333333d9; --nav-item-bg: rgba(0, 0, 0, 0.25);
+            --nav-text-normal: rgba(255, 255, 255, 0.5); --nav-bg-active: rgba(255, 255, 255, 0.15);
+            --nav-text-active: #FFFFFF;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -41,53 +38,43 @@
                 --border-color: #38383A; --modal-overlay: rgba(0, 0, 0, 0.8);
                 --top-blur-bg: rgba(0, 0, 0, 0.75); --primary: #0A66C2; 
                 --success: #30D158; --ios-orange: #FF9F0A;
-                --nav-bg: rgba(118, 118, 128, 0.24); --nav-item-bg: rgba(0, 0, 0, 0.2);
-                --nav-text-normal: rgba(255, 255, 255, 0.5);
-                --nav-bg-active: rgba(255, 255, 255, 0.15); --nav-text-active: #FFFFFF;
+                --nav-bg: rgba(61, 61, 61, 0.24); --nav-item-bg: rgba(0, 0, 0, 0.2);
+                --nav-text-normal: rgba(255, 255, 255, 0.5); --nav-bg-active: rgba(255, 255, 255, 0.15);
+                --nav-text-active: #FFFFFF;
             }
         }
 
-        /* =========================================
-           二、 基础排版与移动端布局
-           ========================================= */
         html { background-color: var(--app-bg); height: 100%; }
-        body { 
-            font-family: -apple-system, "SF Pro Display", sans-serif; 
-            background-color: var(--app-bg); color: var(--text-main); margin: 0; 
-            min-height: 100.5vh; 
-            padding: calc(env(safe-area-inset-top) + 10px) 0 calc(100px + env(safe-area-inset-bottom)) 0; 
-            -webkit-font-smoothing: antialiased; 
-        }
+        body { font-family: -apple-system, "SF Pro Display", sans-serif; background-color: var(--app-bg); color: var(--text-main); margin: 0; min-height: 100.5vh; padding: calc(env(safe-area-inset-top) + 10px) 0 calc(100px + env(safe-area-inset-bottom)) 0; -webkit-font-smoothing: antialiased; }
 
         .app-wrapper { display: flex; flex-direction: column; width: 100%; }
         .scale-container { max-width: 800px; margin: 0 auto; padding: 15px; box-sizing: border-box; transform-origin: top center; width: 100%; transition: transform 0.3s ease; }
-        
         @media (max-width: 767px) { .scale-container { transform: scale(0.96); } }
 
         .page-header { display: flex; justify-content: space-between; align-items: center; padding: 0; margin: 20px 0; min-height: 42px; }
         .big-title { font-size: 34px; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
         .section-header { font-size: 1.2rem; font-weight: bold; margin: 24px 0 8px 0; }
 
-        .apple-card { background: var(--card-bg); border-radius: 24px; margin: 0 0 12px 0; padding: 20px; }
-        .ios-input, .ios-select { background: var(--app-bg); border: none; border-radius: 12px; height: 48px; padding: 0 15px; font-size: 15px; font-weight: 600; color: var(--text-main); width: 100%; outline: none; box-sizing: border-box; -webkit-appearance: none; appearance: none;}
+        .apple-card { background: var(--card-bg); border-radius: 24px; margin: 0 0 12px 0; padding: 20px; box-shadow: none; transition: background-color 0.3s;}
+        .ios-input, .ios-select { background: var(--app-bg); border: none; border-radius: 12px; height: 48px; padding: 0 15px; font-size: 15px; font-weight: 600; color: var(--text-main); width: 100%; outline: none; box-sizing: border-box; -webkit-appearance: none; appearance: none; transition: border-color 0.2s;}
+        .ios-input:focus { border: 1.5px solid var(--primary); }
         
-        .ios-btn-primary { 
-            background: var(--primary); color: #FFF; border: none; border-radius: 30px; 
-            height: 52px; font-size: 14px; font-weight: 500; width: 100%; 
-            cursor: pointer; transition: all 0.2s ease; display: flex; justify-content: center; align-items: center; 
-        }
-        .ios-btn-primary:active { opacity: 0.8; }
+        input[disabled].ios-input { opacity: 1 !important; -webkit-text-fill-color: var(--primary); color: var(--primary); }
+
+        .ios-btn-primary { background: var(--primary); color: #FFF; border: none; border-radius: 30px; height: 52px; font-size: 14px; font-weight: 600; width: 100%; cursor: pointer; transition: all 0.2s ease; display: flex; justify-content: center; align-items: center; box-shadow: none;}
+        .ios-btn-primary:active { opacity: 0.8; transform: scale(0.98); }
         .ios-btn-primary.loading { opacity: 0.5; pointer-events: none; }
-        .ios-btn-secondary { background: var(--card-bg); color: var(--primary); }
+        .ios-btn-secondary { background: var(--app-bg); color: var(--primary); }
         .ios-btn-danger { background: rgba(255, 59, 48, 0.1); color: var(--danger); }
 
-        .hl-card { background: var(--card-bg); border-radius: 24px; padding: 16px 12px; height: 110px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: background-color 0.3s; }
-        .hl-num { font-size: 2.4rem; font-weight: 700; line-height: 1; margin-bottom: 6px; font-family: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; }
+        .hl-card { background: var(--card-bg); border-radius: 24px; padding: 16px 12px; height: 110px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: background-color 0.3s; text-align: center;}
+        .hl-num { font-size: 2.2rem; font-weight: 700; line-height: 1; margin-bottom: 6px; font-family: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; }
         .hl-label { font-size: 0.85rem; color: var(--text-sub); font-weight: 500; }
         
         .pc-dashboard-grid { display: block; }
-        .pc-dashboard-grid .hl-row { display: flex; gap: 8px; padding: 0; margin-bottom: 8px; }
-        .pc-dashboard-grid .hl-col-6 { flex: 1; }
+        .left-dashboard-panel { display: block; }
+        .left-dashboard-panel .hl-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 8px; }
+        .left-dashboard-panel .hl-row.three-cols { grid-template-columns: repeat(3, 1fr); }
 
         .top-blur-mask { position: fixed; top: 0; left: 0; right: 0; height: calc(env(safe-area-inset-top) + 80px); z-index: 9999; pointer-events: none; background: var(--top-blur-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%); mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%); opacity: 0; transition: opacity 0.3s ease; }
         .top-blur-mask.show { opacity: 1; }
@@ -96,13 +83,11 @@
         .nav-icon-pure.edit-active { color: var(--primary) !important; }
         .nav-icon-pure.delete-active { color: var(--danger) !important; }
 
-        /* 底部导航 */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: calc(65px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); box-sizing: border-box; background: var(--nav-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 0.5px solid var(--border-color); z-index: 1000; display: flex; justify-content: center; align-items: center; }
-        .nav-tabs-c { display: flex; background: var(--nav-item-bg); border-radius: 50px; padding: 4px; transition: all 0.3s;}
-        .nav-item-c { font-size: 0.95rem; font-weight: 600; color: var(--nav-text-normal); padding: 6px 20px; border-radius: 50px; transition: 0.3s; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: calc(65px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); box-sizing: border-box; background: var(--nav-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 0.5px solid var(--border-color); z-index: 1000; display: flex; justify-content: center; align-items: center; }
+        .nav-tabs-c { display: flex; background: var(--nav-item-bg); border-radius: 50px; padding: 4px; transition: all 0.3s; max-width: 95%; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; scroll-snap-type: x mandatory;}
+        .nav-tabs-c::-webkit-scrollbar { display: none; }
+        .nav-item-c { flex-shrink: 0; font-size: 0.95rem; font-weight: 600; color: var(--nav-text-normal); padding: 6px 18px; border-radius: 50px; transition: 0.3s; cursor: pointer; display: flex; align-items: center; justify-content: center; scroll-snap-align: center;}
         .nav-item-c.active { background: var(--nav-bg-active); color: var(--nav-text-active); }
-        
-        /* 移动端强制隐藏图标 */
         .pc-only-icon { display: none !important; }
 
         .settings-card { background: var(--card-bg); border-radius: 18px; overflow: hidden; margin: 0 0 12px 0; transition: background 0.3s;}
@@ -113,125 +98,71 @@
         .arrow-icon { font-size: 12px; transition: transform 0.3s; opacity: 0.3; }
         details[open] .arrow-icon { transform: rotate(180deg); }
         .details-content { padding: 0 20px 24px 20px; border-top: 0.5px solid var(--border-color); }
-        .compact-input-group { display: flex; gap: 10px; padding: 16px 0; align-items: center; }
-        .settings-input { height: 42px !important; border-radius: 12px !important; border: 1px solid var(--border-color) !important; background: var(--app-bg) !important; font-size: 15px !important; padding: 0 12px !important; flex: 1; font-weight: 600; color: var(--text-main); box-sizing: border-box;}
         
-        .item-row { display: flex; justify-content: space-between; align-items: center; position: relative; padding: 12px 0; min-height: 44px; box-sizing: border-box; cursor: pointer; transition: background 0.2s;}
+        .compact-input-group { display: flex; gap: 12px; padding: 16px 0; align-items: center; width: 100%; box-sizing: border-box; }
+        .settings-input { 
+            -webkit-appearance: none; appearance: none; 
+            height: 42px !important; border-radius: 10px !important; border: 1.5px solid var(--border-color) !important; 
+            background: var(--app-bg) !important; font-size: 15px !important; padding: 0 12px !important; 
+            flex: 1; min-width: 0; font-weight: 600; color: var(--text-main); box-sizing: border-box; outline: none; transition: border-color 0.2s; 
+        }
+        .settings-input:focus { border-color: var(--primary) !important; }
+        
+        .item-row { display: flex; justify-content: space-between; align-items: center; position: relative; padding: 14px 0; box-sizing: border-box; cursor: pointer; transition: opacity 0.2s;}
         .item-row:active { opacity: 0.6; }
         .item-row::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 0.5px; background: var(--border-color); }
         .item-row:last-child::after { display: none; }
 
         .log-details-group { border-bottom: 1px solid var(--border-color); transition: background 0.2s; }
         .log-details-group:last-child { border-bottom: none; }
-        .log-summary { display: flex; align-items: center; padding: 12px 0; cursor: pointer; list-style: none; outline: none; user-select: none; }
+        .log-summary { display: flex; align-items: center; padding: 14px 0; cursor: pointer; list-style: none; outline: none; user-select: none; }
         .log-summary::-webkit-details-marker { display: none; }
         details[open] .log-arrow { transform: rotate(180deg); }
 
         .custom-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--modal-overlay); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; overscroll-behavior: contain; }
         .custom-modal-overlay.active { display: flex; opacity: 1; }
-        .pop-in { background: var(--card-bg); border-radius: 24px; width: 85%; max-width: 380px; padding: 24px; transform: scale(0.9); transition: 0.3s; box-shadow: 0 10px 40px rgba(0,0,0,0.15); box-sizing: border-box;}
+        .pop-in { background: var(--card-bg); border-radius: 24px; width: 85%; max-width: 380px; padding: 24px; transform: scale(0.9); transition: 0.3s; box-shadow: 0 10px 40px rgba(0,0,0,0.15); box-sizing: border-box; max-height: 85vh; overflow-y: auto;}
         .custom-modal-overlay.active .pop-in { transform: scale(1); }
+
+        .status-badge { display: inline-flex; align-items: center; font-size: 0.85rem; font-weight: 600; background: var(--app-bg); padding: 4px 10px; border-radius: 20px;}
+        .static-dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; flex-shrink: 0; }
+        .status-running { color: var(--success); } .status-running .static-dot { background-color: var(--success); box-shadow: 0 0 6px rgba(52, 199, 89, 0.4); }
+        .status-standby { color: var(--success); } .status-standby .static-dot { background-color: var(--success); }
+        .status-offline { color: var(--text-sub); } .status-offline .static-dot { background-color: var(--text-sub); }
+        .status-warning { color: var(--ios-orange); } .status-warning .static-dot { background-color: var(--ios-orange); }
+        .status-error { color: var(--danger); } .status-error .static-dot { background-color: var(--danger); box-shadow: 0 0 6px rgba(255, 59, 48, 0.5); }
+
+        .ios-search-bar { display: flex; align-items: center; background: var(--app-bg); border-radius: 12px; box-sizing: border-box; }
+        .ios-search-icon { color: var(--text-sub); font-size: 18px; margin-right: 6px; flex-shrink: 0; }
+        .ios-search-input { -webkit-appearance: none; appearance: none; flex: 1; border: none; background: transparent; color: var(--text-main); font-size: 0.95rem; outline: none; min-width: 0; height: 100%; box-sizing: border-box; padding: 0; }
+        .ios-search-input::placeholder { color: var(--text-sub); }
         
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .spin { animation: spin 1s linear infinite; }
 
-
-        /* =========================================
-           🚀 三、 PC/桌面端深度适配 (Desktop Adaptation)
-           ========================================= */
         @media (min-width: 768px) {
             body { padding: 0 !important; }
             .top-blur-mask { display: none; }
-
-            .app-wrapper {
-                flex-direction: row;
-                max-width: 1200px;
-                margin: 0 auto;
-                min-height: 100vh;
-            }
-
-            /* PC端侧边栏 */
-            .bottom-nav {
-                position: sticky;
-                top: 0;
-                left: 0;
-                width: 240px;
-                height: 100vh;
-                background: transparent;
-                border-top: none;
-                border-right: 1px solid var(--border-color);
-                backdrop-filter: none;
-                -webkit-backdrop-filter: none;
-                align-items: flex-start;
-                padding-top: 60px;
-            }
-            .nav-tabs-c {
-                flex-direction: column;
-                background: transparent;
-                width: 100%;
-                padding: 0 20px;
-                gap: 12px;
-            }
-            .nav-item-c {
-                justify-content: flex-start;
-                padding: 14px 20px;
-                font-size: 16px;
-                border-radius: 14px;
-                color: var(--text-main);
-                font-weight: 500;
-            }
-            /* PC端 Hover 态 */
+            .app-wrapper { flex-direction: row; max-width: 1200px; margin: 0 auto; min-height: 100vh; }
+            .bottom-nav { position: sticky; top: 0; left: 0; width: 240px; height: 100vh; background: transparent; border-top: none; border-right: 1px solid var(--border-color); backdrop-filter: none; -webkit-backdrop-filter: none; align-items: flex-start; padding-top: 40px; }
+            .nav-tabs-c { flex-direction: column; background: transparent; width: 100%; padding: 0 20px; gap: 8px; overflow-x: visible; }
+            .nav-item-c { justify-content: flex-start; padding: 12px 16px; font-size: 15px; border-radius: 12px; color: var(--text-main); font-weight: 500; }
             .nav-item-c:hover { background: rgba(0, 0, 0, 0.04); }
             @media (prefers-color-scheme: dark) { .nav-item-c:hover { background: rgba(255, 255, 255, 0.06); } }
-            
-            /* 【核心修改】PC端激活态：扁平化，去除投影，保持与右侧卡片一致 */
-            .nav-item-c.active {
-                background: var(--card-bg);
-                color: var(--primary);
-                font-weight: bold;
-                /* box-shadow: 0 2px 12px rgba(0,0,0,0.06); */ /* 已移除投影 */
-            }
-
-            /* PC端恢复图标显示 */
+            .nav-item-c.active { background: var(--card-bg); color: var(--primary); font-weight: bold; }
             .pc-only-icon { display: block !important; }
+            .scale-container { flex: 1; max-width: 900px; padding: 40px 60px; margin: 0; }
+            
+            .pc-dashboard-grid { display: flex; gap: 30px; align-items: flex-start; }
+            .left-dashboard-panel { display: flex; flex-direction: column; width: 320px; gap: 16px; flex-shrink: 0; }
+            .left-dashboard-panel .hl-row { display: flex; flex-direction: column; width: 100%; margin-bottom: 0; gap: 16px; }
+            .pc-dashboard-grid .form-wrapper { flex: 1; min-width: 0; }
 
-            .scale-container {
-                flex: 1;
-                max-width: 900px;
-                padding: 40px 60px;
-                margin: 0;
-            }
-
-            .pc-dashboard-grid {
-                display: flex;
-                gap: 30px;
-                align-items: flex-start;
-            }
-            .pc-dashboard-grid .hl-row {
-                flex-direction: column;
-                width: 260px;
-                margin-bottom: 0;
-                gap: 16px;
-            }
-            .pc-dashboard-grid .form-wrapper {
-                flex: 1;
-            }
-
-            /* 【核心修改】PC端 Hover 互动扁平化：去除浮起和投影 */
-            .ios-btn-primary:not(.ios-btn-secondary):not(.ios-btn-danger):hover { 
-                /* transform: translateY(-2px); */ /* 已移除浮起 */
-                /* box-shadow: 0 6px 20px var(--primary-shadow); */ /* 已移除投影 */
-                opacity: 0.9; /* 增加轻微透明度反馈 */
-            }
+            .ios-btn-primary:not(.ios-btn-secondary):not(.ios-btn-danger):hover { opacity: 0.9; }
             .ios-btn-secondary:hover { background: var(--app-bg); }
             .ios-btn-danger:hover { background: rgba(255, 59, 48, 0.15); }
-            
             .nav-icon-pure:hover { transform: scale(1.1); }
-            
-            .log-details-group:hover, .item-row:hover {
-                background: var(--app-bg);
-                border-radius: 12px;
-            }
+            .log-details-group:hover, .item-row:hover { background: var(--app-bg); border-radius: 12px; }
             .log-summary { padding: 12px; margin: -12px; border-radius: 12px; }
             .item-row { padding-left: 12px; padding-right: 12px; margin-left: -12px; margin-right: -12px; }
             .item-row::after { left: 12px; right: 12px; }
@@ -247,13 +178,24 @@
     
     <nav class="bottom-nav">
         <div class="nav-tabs-c">
-            <a class="nav-item-c" :class="{active: activeTab === 'overview'}" @click="switchTab('overview')">
+            <div class="pc-only-icon" style="font-size: 12px; font-weight: bold; color: var(--text-sub); padding: 0 16px 8px; letter-spacing: 1px;">DASHBOARD</div>
+            <a class="nav-item-c" :class="{active: activeTab === 'mp_overview'}" @click="switchTab('mp_overview')">
                 <ion-icon name="grid-outline" style="margin-right: 8px; font-size: 18px;" class="pc-only-icon"></ion-icon>总览
             </a>
-            <a class="nav-item-c" :class="{active: activeTab === 'log'}" @click="switchTab('log')">
-                <ion-icon name="time-outline" style="margin-right: 8px; font-size: 18px;" class="pc-only-icon"></ion-icon>日志
+            
+            <div class="pc-only-icon" style="font-size: 12px; font-weight: bold; color: var(--text-sub); padding: 16px 16px 8px; letter-spacing: 1px;">REMOTE</div>
+            <a class="nav-item-c" :class="{active: activeTab === 'lp_details'}" @click="switchTab('lp_details')">
+                <ion-icon name="list-outline" style="margin-right: 8px; font-size: 18px;" class="pc-only-icon"></ion-icon>明细
             </a>
-            <a class="nav-item-c" :class="{active: activeTab === 'settings'}" @click="switchTab('settings')">
+            <a class="nav-item-c" :class="{active: activeTab === 'lp_history'}" @click="switchTab('lp_history')">
+                <ion-icon name="calendar-outline" style="margin-right: 8px; font-size: 18px;" class="pc-only-icon"></ion-icon>历史
+            </a>
+            <a class="nav-item-c" :class="{active: activeTab === 'mp_log'}" @click="switchTab('mp_log')">
+                <ion-icon name="time-outline" style="margin-right: 8px; font-size: 18px;" class="pc-only-icon"></ion-icon>记录
+            </a>
+            
+            <div class="pc-only-icon" style="font-size: 12px; font-weight: bold; color: var(--text-sub); padding: 16px 16px 8px; letter-spacing: 1px;">SYSTEM</div>
+            <a class="nav-item-c" :class="{active: activeTab === 'mp_settings'}" @click="switchTab('mp_settings')">
                 <ion-icon name="settings-outline" style="margin-right: 8px; font-size: 18px;" class="pc-only-icon"></ion-icon>配置
             </a>
         </div>
@@ -261,134 +203,342 @@
 
     <div class="scale-container">
 
-        <div v-show="activeTab === 'overview'">
-            <div class="page-header"><h1 class="big-title">Today</h1></div>
+        <div v-show="activeTab === 'mp_overview'">
+            <div class="page-header">
+                <div style="display: flex; align-items: center;">
+                    <h1 class="big-title" style="padding-right: 12px;">Today</h1>
+                    <div class="nav-icon-pure" @click="resetRound" title="重置本轮统计" style="margin-right: 12px;"><ion-icon name="refresh-outline" style="font-size: 22px;"></ion-icon></div>
+                    <div class="nav-icon-pure" @click="openNodeSettings" title="切换业务视图"><ion-icon name="options-outline" style="font-size: 22px;"></ion-icon></div>
+                </div>
+                <div class="status-badge" :class="getStatusTypeClass(lpStats.process_status)" v-if="curNodeId && lpStats.process_status">
+                    <div class="static-dot"></div><span>{{ getStatusText(lpStats.process_status) }}</span>
+                </div>
+            </div>
             
             <div class="pc-dashboard-grid">
-                <div class="hl-row">
-                    <div class="hl-col-6">
-                        <div class="hl-card">
-                            <div class="hl-num" style="color: var(--ios-orange);">{{ warningCount }}</div>
-                            <div class="hl-label">等待执行分组</div>
+                <div class="left-dashboard-panel">
+                    <div v-if="!curNodeId" class="apple-card" style="text-align: center; padding: 20px; color: var(--ios-orange); font-weight: bold; margin-bottom: 8px;">
+                        请先在【配置】选择终端
+                    </div>
+                    
+                    <div class="apple-card" v-if="curNodeId" style="padding: 24px 12px; margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-around; align-items: center; text-align: center;">
+                            <div style="flex: 1;">
+                                <div style="font-size: 1.8rem; font-weight: 700; color: var(--text-main); font-family: ui-rounded, sans-serif; line-height: 1;">{{ lpStats.total_users || 0 }}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-sub); font-weight: 500; margin-top: 6px;">参与账号</div>
+                            </div>
+                            <div style="width: 1px; height: 36px; background: var(--border-color);"></div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 1.8rem; font-weight: 700; color: var(--success); font-family: ui-rounded, sans-serif; line-height: 1;">{{ lpStats.total_wins || 0 }}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-sub); font-weight: 500; margin-top: 6px;">钻石产出</div>
+                            </div>
+                            <div style="width: 1px; height: 36px; background: var(--border-color);"></div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 1.8rem; font-weight: 700; color: var(--primary); font-family: ui-rounded, sans-serif; line-height: 1;">{{ lpStats.total_physical_wins || 0 }}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-sub); font-weight: 500; margin-top: 6px;">实物掉落</div>
+                            </div>
                         </div>
                     </div>
-                    <div class="hl-col-6">
-                        <div class="hl-card">
-                            <div class="hl-num" style="color: var(--primary);">{{ totalQuantity }}</div>
-                            <div class="hl-label">累计产出数量</div>
+                    
+                    <div class="apple-card" style="padding: 24px 12px; margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-around; align-items: center; text-align: center;">
+                            <div style="flex: 1;">
+                                <div style="font-size: 1.8rem; font-weight: 700; color: var(--ios-orange); font-family: ui-rounded, sans-serif; line-height: 1;">{{ mpWarningCount }}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-sub); font-weight: 500; margin-top: 6px;">等待执行分组</div>
+                            </div>
+                            <div style="width: 1px; height: 36px; background: var(--border-color);"></div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 1.8rem; font-weight: 700; color: var(--primary); font-family: ui-rounded, sans-serif; line-height: 1;">{{ mpTotalQuantity }}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-sub); font-weight: 500; margin-top: 6px;">累计产出数量</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-wrapper">
-                    <form @submit.prevent="addRecord" style="margin: 0;">
+                    <div v-if="curNodeId">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 0 8px; margin-top: 24px;">
+                            <div style="display: flex; align-items: center;">
+                                <span style="font-size: 1.25rem; font-weight: bold; color: var(--text-main);">收益排行</span>
+                                <div class="nav-icon-pure" style="margin-left: 12px;" @click="hideNicknames = !hideNicknames"><ion-icon :name="hideNicknames ? 'eye-off-outline' : 'eye-outline'" style="font-size: 20px;"></ion-icon></div>
+                            </div>
+                            <span style="font-size: 12px; color: var(--text-sub); background: var(--app-bg); padding: 4px 8px; border-radius: 8px; font-family: monospace;" v-if="lpStats.date_range">{{ lpStats.date_range }}</span>
+                        </div>
                         <div class="apple-card" style="margin-top: 0;">
-                            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
-                                <div style="background: var(--app-bg); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                                    <label style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-bottom: 2px;">本轮时间</label>
-                                    <input type="datetime-local" v-model="form.date" max="2099-12-31T23:59" required
-                                           style="background: transparent; border: none; width: 100%; font-size: 18px; font-weight: 700; color: var(--primary); text-align: center; outline: none; font-family: -apple-system, sans-serif; padding: 0; box-sizing: border-box;">
+                            <div v-for="(user, i) in lpStats.rank_list" :key="i" class="item-row" style="padding: 12px 0;">
+                                <div style="flex: 1; overflow: hidden; padding-right: 12px;">
+                                    <div style="font-weight: 500; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ hideNicknames ? '***' : user.nickname }}</div>
                                 </div>
-                                <div style="background: var(--app-bg); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                                     <label style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-bottom: 2px;">下轮预计 (+{{ settings.interval_hours }}h)</label>
-                                     <div style="font-size: 18px; font-weight: 700; color: var(--text-main); font-family: -apple-system, sans-serif;">{{ nextRoundPreview }}</div>
+                                <div style="display: flex; align-items: center;">
+                                    <span style="color: var(--text-sub); font-size: 13px; font-weight: 500; margin-right: 16px;">{{ user.win_times }} 次</span>
+                                    <span style="color: var(--primary); font-size: 18px; font-weight: bold; min-width: 40px; text-align: right;">{{ user.win_sum }}</span>
                                 </div>
                             </div>
-
-                            <div style="margin-bottom: 16px;">
-                                <label style="font-size: 12px; color: var(--text-sub); font-weight: 600; margin-left: 8px; margin-bottom: 6px; display: block;">分组</label>
-                                <select v-model="form.group" class="ios-select" required>
-                                    <option v-for="item in items" :key="item.id" :value="item.name">{{ item.name }}</option>
-                                    <option v-if="items.length === 0" value="" disabled>请先在配置页添加</option>
-                                </select>
-                            </div>
-                            
-                            <div style="margin-bottom: 4px;">
-                                <label style="font-size: 12px; color: var(--text-sub); font-weight: 600; margin-left: 8px; margin-bottom: 6px; display: block;">数量</label>
-                                <input type="number" v-model="form.quantity" class="ios-input" placeholder="输入数值" required>
-                            </div>
+                            <div v-if="lpStats.rank_list.length===0" style="text-align: center; color: var(--text-sub); padding: 30px 0;">暂无产出数据</div>
                         </div>
-                        
-                        <div style="padding: 0;">
-                            <button type="submit" class="ios-btn-primary ios-btn-secondary" :class="{loading: isSubmitting}">
-                                <ion-icon v-if="!isSubmitting" name="add-circle" style="font-size: 22px; margin-right: 8px;"></ion-icon>
-                                <ion-icon v-else name="sync" class="spin" style="font-size: 22px; margin-right: 8px;"></ion-icon>
-                                <span>保存记录</span>
-                            </button>
-                        </div>
-                    </form>
+                    </div>
+                    <div v-else class="apple-card" style="text-align: center; padding: 60px 20px; color: var(--text-sub); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; border: 2px dashed var(--border-color); background: transparent; margin-top: 24px;">
+                        <ion-icon name="server-outline" style="font-size: 48px; opacity: 0.5; margin-bottom: 16px;"></ion-icon>
+                        <div>选择终端以查看排行数据</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div v-show="activeTab === 'log'">
+        <div v-show="activeTab === 'lp_details'">
             <div class="page-header">
-                <h1 class="big-title">日志</h1>
-                <div style="display: flex; gap: 18px;">
-                    <button class="nav-icon-pure" :class="{'edit-active': logMode === 'edit'}" @click="toggleLogMode('edit')"><ion-icon name="create-outline"></ion-icon></button>
-                    <button class="nav-icon-pure" :class="{'delete-active': logMode === 'delete'}" @click="toggleLogMode('delete')"><ion-icon name="trash-outline"></ion-icon></button>
+                <h1 class="big-title">日志数据</h1>
+                <div class="nav-icon-pure" :class="{ 'edit-active': filterSmallPacks }" @click="filterSmallPacks = !filterSmallPacks" title="过滤小包"><ion-icon :name="filterSmallPacks ? 'funnel' : 'funnel-outline'"></ion-icon></div>
+            </div>
+
+            <div v-if="!curNodeId" class="apple-card" style="text-align: center; padding: 40px 20px; color: var(--ios-orange); font-weight: bold;">
+                请先在【配置】选择一个终端节点
+            </div>
+            <div v-else>
+                <div class="apple-card">
+                    <div class="ios-search-bar" style="height: 46px; padding: 0 12px; margin-bottom: 16px;">
+                        <ion-icon name="search" class="ios-search-icon" style="flex-shrink: 0;"></ion-icon>
+                        <select v-model="searchType" style="border:none; background:transparent; color:var(--text-main); font-weight:600; outline:none; -webkit-appearance:none; padding-right:4px; flex-shrink: 0; cursor: pointer;">
+                            <option value="nick">昵称</option><option value="date">日期</option>
+                        </select>
+                        <ion-icon name="chevron-down" style="font-size: 12px; color: var(--text-sub); margin-right: 8px; flex-shrink: 0; pointer-events: none;"></ion-icon>
+                        <div style="width: 1px; height: 16px; background: var(--text-sub); opacity: 0.3; margin-right: 12px; flex-shrink: 0;"></div>
+                        <input type="text" class="ios-search-input" placeholder="输入搜索内容..." v-model="searchText" style="flex: 1; min-width: 0; height: 100%; box-sizing: border-box;">
+                        <ion-icon name="close-circle" style="color: var(--text-sub); font-size: 18px; opacity: 0.6; cursor: pointer; flex-shrink: 0;" v-show="searchText" @click="searchText = ''"></ion-icon>
+                    </div>
+
+                    <div v-if="filterSmallPacks" style="background: var(--app-bg); border-radius: 16px; padding: 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-color);">
+                        <div style="color: var(--text-sub); font-weight: bold; font-size: 14px;">大包总计 <span style="font-weight: 400; font-size: 12px;">(已过滤<24)</span></div>
+                        <div style="color: var(--primary); font-size: 20px; font-weight: bold;">{{ filteredTotal }}</div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; padding: 0 4px 12px 4px; border-bottom: 1px solid var(--border-color); color: var(--text-sub); font-size: 13px; font-weight: 600;">
+                        <div style="display: flex; align-items: center;">用户 / 时间 <ion-icon :name="hideNicknames ? 'eye-off-outline' : 'eye-outline'" style="font-size: 16px; margin-left: 6px; cursor: pointer;" @click="hideNicknames = !hideNicknames"></ion-icon></div>
+                        <div>产出明细</div>
+                    </div>
+
+                    <div style="max-height: 50vh; overflow-y: auto;">
+                        <div class="item-row" v-for="item in filteredDetails" :key="item.id" style="align-items: center; padding: 14px 4px;">
+                            <div style="flex: 1; overflow: hidden; padding-right: 12px;">
+                                <div style="font-weight: 500; color: var(--text-main); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{ hideNicknames ? '***' : item.nickname }}</div>
+                                <div style="font-size: 12px; color: var(--text-sub); margin-top: 4px;">
+                                    {{ formatShortDate(item.log_time) }}
+                                    <span v-if="item.item_type && item.item_type !== '钻石'" style="color: var(--primary); font-weight: bold; opacity: 1;"> | {{ item.item_type }}</span>
+                                </div>
+                            </div>
+                            <div style="font-size: 18px; font-weight: bold; color: var(--primary); text-align: right;">
+                                {{ item.item_type === '钻石' ? item.quantity : '实物' }}
+                            </div>
+                        </div>
+                        <div v-if="filteredDetails.length===0" style="text-align: center; color: var(--text-sub); padding: 30px 0;">暂无匹配明细</div>
+                    </div>
                 </div>
             </div>
+        </div>
+
+        <div v-show="activeTab === 'lp_history'">
+            <div class="page-header">
+                <h1 class="big-title">历史记录</h1>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <div class="nav-icon-pure" @click="hideHistory = !hideHistory"><ion-icon :name="hideHistory ? 'eye-off-outline' : 'eye-outline'"></ion-icon></div>
+                    <div class="nav-icon-pure" @click="openUserFilter" :class="{ 'edit-active': historyFilterUser }"><ion-icon :name="historyFilterUser ? 'funnel' : 'funnel-outline'"></ion-icon></div>
+                </div>
+            </div>
+
+            <div v-if="!curNodeId" class="apple-card" style="text-align: center; padding: 40px 20px; color: var(--ios-orange); font-weight: bold;">
+                请先在【配置】选择一个终端节点
+            </div>
+            <div v-else>
+                <div v-if="historyFilterUser" class="apple-card" style="background: linear-gradient(135deg, rgba(0,122,255,0.08), rgba(52,199,89,0.05)); border: 1px solid rgba(0,122,255,0.2); display: flex; justify-content: space-between; align-items: center; padding: 20px;">
+                    <div style="flex: 1; min-width: 0; padding-right: 15px;">
+                        <div style="color: var(--text-sub); font-weight: bold; font-size: 13px;">累计产出</div>
+                        <div style="font-size: 18px; font-weight: bold; color: var(--text-main); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            {{ hideNicknames && historyFilterUser !== '【全节点时段总和】' ? '***' : historyFilterUser }}
+                        </div>
+                        <div style="color: var(--text-sub); font-size: 12px; margin-top: 4px; font-family: monospace;">{{ historyFilterDateRange }}</div>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <span style="color: var(--primary); font-weight: bold; font-size: 2.2rem; margin-right: 16px; font-family: ui-rounded, sans-serif;">{{ historyFilterTotal }}</span>
+                        <div class="nav-icon-pure" @click="clearUserFilter"><ion-icon name="close-circle"></ion-icon></div>
+                    </div>
+                </div>
+
+                <div v-if="!lpStats.history_data || lpStats.history_data.length===0" style="text-align: center; padding: 40px 0; color: var(--text-sub);">暂无历史数据</div>
+                
+                <details class="settings-card" v-for="day in lpStats.history_data" :key="day.date" @toggle="e => updateExpandedState(day.date, e.target.open)">
+                    <summary class="settings-summary" style="height: 60px;">
+                        <div style="display: flex; align-items: center;">
+                            <span style="font-weight: bold; font-size: 16px; color: var(--text-main);">{{ day.date }}</span>
+                            <span v-if="day.is_manual" style="background: var(--ios-orange); color: #FFF; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 6px; margin-left: 8px;">已修正</span>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <span style="color: var(--primary); font-weight: bold; font-size: 18px; margin-right: 12px;">{{ (hideHistory && !expandedDates[day.date]) ? '***' : ('+' + day.daily_sum) }}</span>
+                            <ion-icon name="chevron-down-outline" class="arrow-icon"></ion-icon>
+                        </div>
+                    </summary>
+                    <div class="details-content" style="padding-top: 16px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px;">
+                            <span style="color: var(--text-sub);">参与账号数量</span><span style="font-weight: bold; color: var(--text-main);">{{ day.user_count }}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 14px;">
+                            <span style="color: var(--text-sub);">当日总产出</span><span style="font-weight: bold; color: var(--text-main);">{{ day.daily_sum }}</span>
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="ios-btn-primary ios-btn-secondary" style="height: 44px; flex: 1;" @click="handleLpHistoryEdit(day)">数据修正</button>
+                            <button class="ios-btn-primary" style="height: 44px; flex: 1;" @click="viewHistoryLogs(day.date)">查看明细</button>
+                        </div>
+                    </div>
+                </details>
+            </div>
+        </div>
+
+        <div v-show="activeTab === 'mp_log'">
+            <div class="page-header">
+                <h1 class="big-title">收益记录</h1>
+            </div>
+            
+            <form @submit.prevent="mpAddRecord" style="margin: 0; margin-bottom: 24px;">
+                <div class="apple-card" style="margin-top: 0; padding: 0; overflow: hidden; background: var(--card-bg);">
+                    <div @click="showAddRecord = !showAddRecord" style="padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: transparent;">
+                        <div style="font-weight: bold; font-size: 1.1rem; color: var(--text-main); display: flex; align-items: center;">
+                            <ion-icon name="add-circle" style="margin-right: 8px; font-size: 22px; color: var(--primary);"></ion-icon>新增记录
+                        </div>
+                        <ion-icon name="chevron-down-outline" style="color: var(--text-sub); font-size: 18px; transition: transform 0.2s;" :style="{ transform: showAddRecord ? 'rotate(180deg)' : 'rotate(0)' }"></ion-icon>
+                    </div>
+                    
+                    <div v-show="showAddRecord" style="padding: 0 20px 20px 20px;">
+                        <div style="height: 1px; background: var(--border-color); margin: 0 -20px 16px -20px;"></div>
+                        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
+                            <div style="background: var(--app-bg); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                                <label style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-bottom: 2px;">本轮时间</label>
+                                <input type="datetime-local" v-model="mpForm.date" max="2099-12-31T23:59" required
+                                       style="background: transparent; border: none; width: 100%; font-size: 18px; font-weight: 700; color: var(--text-main); text-align: center; outline: none; font-family: -apple-system, sans-serif; padding: 0; box-sizing: border-box;">
+                            </div>
+                            <div style="background: var(--app-bg); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                                 <label style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-bottom: 2px;">下轮预计 (+{{ mpSettings.interval_hours }}h)</label>
+                                 <input type="datetime-local" :value="mpNextRoundPreviewT" disabled
+                                        class="ios-input" style="background: transparent; border: none; width: 100%; height: auto; font-size: 18px; font-weight: 700; text-align: center; padding: 0; margin: 0;">
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                            <div style="flex: 2;">
+                                <label style="font-size: 12px; color: var(--text-sub); font-weight: 600; margin-left: 8px; margin-bottom: 6px; display: block;">分组</label>
+                                <select v-model="mpForm.group" class="ios-select" required>
+                                    <option v-for="item in mpItems" :key="item.id" :value="item.name">{{ item.name }}</option>
+                                    <option v-if="mpItems.length === 0" value="" disabled>请先在配置页添加</option>
+                                </select>
+                            </div>
+                            <div style="flex: 1;">
+                                <label style="font-size: 12px; color: var(--text-sub); font-weight: 600; margin-left: 8px; margin-bottom: 6px; display: block;">数量</label>
+                                <input type="number" v-model="mpForm.quantity" class="ios-input" placeholder="0" required style="text-align: center;">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="ios-btn-primary" :class="{loading: isSubmitting}">
+                            <ion-icon v-if="!isSubmitting" name="checkmark-circle" style="font-size: 22px; margin-right: 8px;"></ion-icon>
+                            <ion-icon v-else name="sync" class="spin" style="font-size: 22px; margin-right: 8px;"></ion-icon>
+                            <span>确认保存</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="section-header" style="margin-top: 0; margin-left: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <span>历史追溯</span>
+                <div style="display: flex; gap: 16px; margin-right: 8px;">
+                    <button class="nav-icon-pure" :class="{'edit-active': mpLogMode === 'edit'}" @click="toggleMpLogMode('edit')"><ion-icon name="create-outline" style="font-size: 20px;"></ion-icon></button>
+                    <button class="nav-icon-pure" :class="{'delete-active': mpLogMode === 'delete'}" @click="toggleMpLogMode('delete')"><ion-icon name="trash-outline" style="font-size: 20px;"></ion-icon></button>
+                </div>
+            </div>
+
             <div class="apple-card" style="padding: 0 20px;">
-                <details class="log-details-group" v-for="r in records" :key="r.id">
-                    <summary class="log-summary" @click="handleLogClick($event, r)">
-                        <div class="icon-wrapper-left" style="overflow:hidden; transition:0.3s;" :style="{width: logMode==='delete'?'34px':'0', opacity: logMode==='delete'?'1':'0'}">
+                <details class="log-details-group" v-for="r in mpRecords" :key="r.id">
+                    <summary class="log-summary" @click="handleMpLogClick($event, r)">
+                        <div class="icon-wrapper-left" style="overflow:hidden; transition:0.3s;" :style="{width: mpLogMode==='delete'?'34px':'0', opacity: mpLogMode==='delete'?'1':'0'}">
                             <div style="width: 22px; height: 22px; background: var(--danger); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
                                 <div style="width:12px; height:2px; background:white;"></div>
                             </div>
                         </div>
-                        
                         <div style="flex: 1; display: flex; justify-content: space-between; align-items: center;">
                             <div>
                                 <div style="font-weight: bold; font-size: 17px;">{{ r.group }}</div>
-                                <div v-html="getRecordStatusHtml(r)"></div>
+                                <div v-html="getMpRecordStatusHtml(r)"></div>
                             </div>
-                            
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <div style="font-size: 22px; font-weight: 700; color: var(--primary); font-family: ui-rounded, sans-serif;">{{ r.quantity }}</div>
-                                <div class="icon-wrapper-right" style="overflow: hidden; transition: 0.3s;" :style="{width: logMode==='edit'?'28px':'0', opacity: logMode==='edit'?'1':'0'}">
+                                <div class="icon-wrapper-right" style="overflow: hidden; transition: 0.3s;" :style="{width: mpLogMode==='edit'?'28px':'0', opacity: mpLogMode==='edit'?'1':'0'}">
                                     <ion-icon name="create" style="font-size: 20px; color: var(--primary); margin-left: 8px;"></ion-icon>
                                 </div>
                                 <ion-icon name="chevron-down-outline" class="log-arrow" style="font-size: 18px; color: #C7C7CC; transition: 0.3s;"></ion-icon>
                             </div>
                         </div>
                     </summary>
-                    
                     <div style="padding: 0 0 16px 0; margin-top: 12px;">
                         <div style="background: var(--app-bg); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
-                            <div style="display: flex; justify-content: space-between; font-size: 13px;">
-                                <span style="color: var(--text-sub);">本轮分组</span><span style="font-weight: 600;">{{ r.group }}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; font-size: 13px;">
-                                <span style="color: var(--text-sub);">本轮产出</span><span style="font-weight: 600; font-family: ui-rounded, sans-serif; color: var(--primary);">{{ r.quantity }}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; font-size: 13px;">
-                                <span style="color: var(--text-sub);">结束时间</span><span style="font-weight: 600;">{{ r.date }}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; font-size: 13px;">
-                                <span style="color: var(--text-sub);">预计下轮</span><span style="font-weight: 600; color: var(--primary);">{{ r.next_time !== '--' ? r.next_time : '暂无' }}</span>
-                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px;"><span style="color: var(--text-sub);">本轮分组</span><span style="font-weight: 600;">{{ r.group }}</span></div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px;"><span style="color: var(--text-sub);">本轮产出</span><span style="font-weight: 600; font-family: ui-rounded, sans-serif; color: var(--primary);">{{ r.quantity }}</span></div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px;"><span style="color: var(--text-sub);">结束时间</span><span style="font-weight: 600;">{{ r.date }}</span></div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px;"><span style="color: var(--text-sub);">预计下轮</span><span style="font-weight: 600; color: var(--primary);">{{ r.next_time !== '--' ? r.next_time : '暂无' }}</span></div>
                         </div>
                     </div>
                 </details>
-                <div v-if="records.length === 0" style="text-align: center; padding: 40px 0; color: var(--text-sub);">暂无日志数据</div>
+                <div v-if="mpRecords.length === 0" style="text-align: center; padding: 40px 0; color: var(--text-sub);">暂无记录</div>
             </div>
         </div>
 
-        <div v-show="activeTab === 'settings'">
+        <div v-show="activeTab === 'mp_settings'">
             <div class="page-header"><h1 class="big-title">配置</h1></div>
+
+            <div class="section-header">终端管控</div>
+            <details class="settings-card" :open="!curNodeId">
+                <summary class="settings-summary">
+                    <div class="summary-title">节点切换与管理</div>
+                    <div class="summary-status">
+                        <span v-if="curNodeId" style="color: var(--success); font-weight: bold;">当前: {{ curNodeName }}</span>
+                        <span v-else style="color: var(--ios-orange); font-weight: bold;">未选择</span>
+                        <span class="arrow-icon">▼</span>
+                    </div>
+                </summary>
+                <div class="details-content" style="padding: 0; background: var(--app-bg); border-top: 1px solid var(--border-color);">
+                    <div v-if="nodeList.length === 0" style="text-align: center; padding: 30px 0; color: var(--text-sub);">
+                        <ion-icon name="server-outline" style="font-size: 32px; opacity: 0.5; margin-bottom: 8px;"></ion-icon>
+                        <div style="font-size: 13px;">暂无客户端连接</div>
+                    </div>
+                    <div v-else>
+                        <div class="item-row" v-for="node in nodeList" :key="node.device_id" @click="selectNode(node)" style="padding: 16px 20px; background: var(--card-bg); margin-bottom: 1px; border-bottom: none;">
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                                    <span style="font-weight: bold; font-size: 15px; color: var(--text-main);">{{ node.nickname }}</span>
+                                    <ion-icon name="lock-closed" v-if="node.has_password" style="font-size: 12px; color: var(--text-sub); margin-left: 6px;"></ion-icon>
+                                    <span v-if="curNodeId === node.device_id" style="background: var(--success); color: white; padding: 2px 6px; border-radius: 8px; font-size: 10px; font-weight: bold; margin-left: 8px;">活跃</span>
+                                </div>
+                                <div style="font-size: 11px; color: var(--text-sub); font-family: monospace;">ID: {{ node.device_id.substring(0, 12) }}...</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div class="status-badge" :class="node.is_online ? 'status-running' : 'status-offline'" style="padding: 0; background: transparent;">
+                                    <div class="static-dot" style="margin:0; width: 10px; height: 10px;"></div>
+                                </div>
+                                <div @click.stop="deleteNode(node)" style="color: var(--danger); display: flex; align-items: center; padding: 4px;">
+                                    <ion-icon name="trash-outline" style="font-size: 18px;"></ion-icon>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </details>
             
-            <div class="section-header">记录与周期</div>
+            <div class="section-header" style="margin-top: 24px;">记账项设定</div>
             <div style="display: flex; flex-direction: column; gap: 0;">
                 <details class="settings-card">
-                    <summary class="settings-summary"><div class="summary-title">管理分组</div><div class="summary-status"><span>{{ items.length }} 个分组</span><span class="arrow-icon">▼</span></div></summary>
+                    <summary class="settings-summary"><div class="summary-title">管理分组</div><div class="summary-status"><span>{{ mpItems.length }} 个分组</span><span class="arrow-icon">▼</span></div></summary>
                     <div class="details-content">
                         <form @submit.prevent="saveSettings('add_item')" class="compact-input-group">
                             <input type="text" v-model="settingsForm.newItemName" placeholder="新分组名称" required class="settings-input">
                             <button type="submit" class="ios-btn-primary ios-btn-secondary" style="height: 42px; width: auto; padding: 0 18px;">添加</button>
                         </form>
                         <div style="background: var(--app-bg); border-radius: 15px; overflow: hidden; padding: 0 16px;">
-                            <div class="item-row" v-for="item in items" :key="item.id" @click="openGroupModal(item)">
+                            <div class="item-row" v-for="item in mpItems" :key="item.id" @click="openGroupModal(item)">
                                 <span style="font-size: 15px; font-weight: bold;">{{ item.name }}</span>
                                 <ion-icon name="chevron-forward-outline" style="color: var(--text-sub); font-size: 18px;"></ion-icon>
                             </div>
@@ -396,7 +546,7 @@
                     </div>
                 </details>
                 <details class="settings-card">
-                    <summary class="settings-summary"><div class="summary-title">时间周期</div><div class="summary-status"><span style="color: var(--primary); font-weight: 700;">{{ settings.interval_hours }}h</span><span class="arrow-icon">▼</span></div></summary>
+                    <summary class="settings-summary"><div class="summary-title">时间周期</div><div class="summary-status"><span style="color: var(--primary); font-weight: 700;">{{ mpSettings.interval_hours }}h</span><span class="arrow-icon">▼</span></div></summary>
                     <div class="details-content">
                         <form @submit.prevent="saveSettings('update_interval')" class="compact-input-group">
                             <input type="number" v-model="settingsForm.interval_hours" required class="settings-input">
@@ -406,12 +556,12 @@
                 </details>
             </div>
 
-            <div class="section-header" style="margin-top: 12px;">通知服务</div>
+            <div class="section-header" style="margin-top: 12px;">通知推送</div>
             <details class="settings-card">
-                <summary class="settings-summary"><div class="summary-title">Bark 推送配置</div><div class="summary-status"><span>{{ settings.bark_url ? '已配置' : '未配置' }}</span><span class="arrow-icon">▼</span></div></summary>
+                <summary class="settings-summary"><div class="summary-title">Bark API 配置</div><div class="summary-status"><span>{{ mpSettings.bark_url ? '已开启' : '未配置' }}</span><span class="arrow-icon">▼</span></div></summary>
                 <div class="details-content">
                     <form @submit.prevent="saveSettings('update_bark')" style="display:flex; flex-direction:column; gap:12px; padding:16px 0;">
-                        <label style="font-size:12px; color:var(--text-sub); font-weight:600;">Bark API 地址</label>
+                        <label style="font-size:12px; color:var(--text-sub); font-weight:600;">Bark 链接</label>
                         <input type="text" v-model="settingsForm.bark_url" placeholder="https://api.day.app/Key/" class="ios-input" style="background:var(--app-bg);">
                         <label style="font-size:12px; color:var(--text-sub); font-weight:600;">推送标题 (支持 {group}, {time})</label>
                         <input type="text" v-model="settingsForm.bark_title" class="ios-input" style="background:var(--app-bg);">
@@ -429,53 +579,59 @@
             </details>
 
             <div class="section-header" style="margin-top: 24px;">其他内容</div>
-            <div style="padding: 0 0 24px 0; display: flex; flex-direction: column; gap: 12px;">
-                <button onclick="showPwaGuide()" class="ios-btn-primary ios-btn-secondary" style="border-radius:18px; height:54px; font-size:16px;">
-                    <ion-icon name="share-outline" style="font-size:22px; margin-right:8px;"></ion-icon>添加到主屏幕 (PWA)
-                </button>
-                <a href="/logout" class="ios-btn-primary ios-btn-danger" style="border-radius:18px; height:54px; font-size:16px; text-decoration:none;">
-                    <ion-icon name="log-out-outline" style="font-size:22px; margin-right:8px;"></ion-icon>退出当前账号
+            <div class="settings-card" style="padding: 0 16px;">
+                <div class="item-row" @click="showPwaGuide">
+                    <div style="display: flex; align-items: center; font-size: 15px; font-weight: bold; color: var(--text-main);">
+                        <ion-icon name="share-outline" style="font-size: 18px; color: var(--text-sub); margin-right: 12px;"></ion-icon>添加到主屏幕 (PWA)
+                    </div>
+                    <ion-icon name="chevron-forward" style="color: var(--text-sub); font-size: 16px;"></ion-icon>
+                </div>
+                <a href="/logout" class="item-row" style="text-decoration: none;">
+                    <div style="display: flex; align-items: center; font-size: 15px; font-weight: bold; color: var(--danger);">
+                        <ion-icon name="log-out-outline" style="font-size: 18px; color: var(--danger); margin-right: 12px;"></ion-icon>退出当前账号
+                    </div>
+                    <ion-icon name="chevron-forward" style="color: var(--text-sub); font-size: 16px;"></ion-icon>
                 </a>
             </div>
         </div>
 
-    </div> <div class="custom-modal-overlay" :class="{active: modal.log.show}" :style="{display: modal.log.show ? 'flex' : 'none'}" @click="modal.log.show = false">
+    </div> <div class="custom-modal-overlay" :class="{active: mpModal.log.show}" :style="{display: mpModal.log.show ? 'flex' : 'none'}" @click="mpModal.log.show = false">
         <div class="pop-in" @click.stop>
             <div style="display:flex; justify-content:space-between; margin-bottom:24px; align-items: center;">
-                <h5 style="font-weight:bold; margin:0; font-size: 20px;">修改数据</h5>
-                <ion-icon name="close-circle" style="font-size:28px; color:var(--text-sub); cursor:pointer;" @click="modal.log.show = false"></ion-icon>
+                <h5 style="font-weight:bold; margin:0; font-size: 20px;">修改记账数据</h5>
+                <ion-icon name="close-circle" style="font-size:28px; color:var(--text-sub); cursor:pointer;" @click="mpModal.log.show = false"></ion-icon>
             </div>
-            <form @submit.prevent="saveLogEdit">
+            <form @submit.prevent="saveMpLogEdit">
                 <div style="margin-bottom:16px;">
                     <label style="font-size:12px; color:var(--text-sub); font-weight: 600; display: block; margin-bottom: 6px;">日期时间</label>
-                    <input type="datetime-local" v-model="modal.log.date" class="ios-input" style="height: 48px; border: 1px solid var(--border-color);" max="2099-12-31T23:59">
+                    <input type="datetime-local" v-model="mpModal.log.date" class="ios-input" style="height: 48px; border: 1px solid var(--border-color);" max="2099-12-31T23:59">
                 </div>
                 <div style="margin-bottom:24px;">
                     <label style="font-size:12px; color:var(--text-sub); font-weight: 600; display: block; margin-bottom: 6px;">数值</label>
-                    <input type="number" v-model="modal.log.value" class="ios-input" style="height: 48px; border: 1px solid var(--border-color);">
+                    <input type="number" v-model="mpModal.log.value" class="ios-input" style="height: 48px; border: 1px solid var(--border-color);">
                 </div>
                 <div style="display: flex; gap: 12px;">
-                    <button type="button" class="ios-btn-primary" style="background: transparent; color: var(--primary); border: 1.5px solid var(--primary); height: 52px; box-shadow: none;" @click="modal.log.show = false">取消</button>
-                    <button type="submit" class="ios-btn-primary" style="height: 52px;">保存</button>
+                    <button type="button" class="ios-btn-primary ios-btn-secondary" style="flex: 1;" @click="mpModal.log.show = false">取消</button>
+                    <button type="submit" class="ios-btn-primary" style="flex: 1;">保存</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="custom-modal-overlay" :class="{active: modal.group.show}" :style="{display: modal.group.show ? 'flex' : 'none'}" @click="modal.group.show = false">
+    <div class="custom-modal-overlay" :class="{active: mpModal.group.show}" :style="{display: mpModal.group.show ? 'flex' : 'none'}" @click="mpModal.group.show = false">
         <div class="pop-in" @click.stop>
             <div style="display:flex; justify-content:space-between; margin-bottom:24px; align-items: center;">
                 <h5 style="font-weight:bold; margin:0; font-size: 20px;">编辑分组</h5>
-                <ion-icon name="close-circle" style="font-size:28px; color:var(--text-sub); cursor:pointer;" @click="modal.group.show = false"></ion-icon>
+                <ion-icon name="close-circle" style="font-size:28px; color:var(--text-sub); cursor:pointer;" @click="mpModal.group.show = false"></ion-icon>
             </div>
             <form @submit.prevent="saveSettings('edit_item')">
                 <div style="margin-bottom:24px;">
                     <label style="font-size:12px; color:var(--text-sub); font-weight: 600; display: block; margin-bottom: 6px;">分组名称</label>
-                    <input type="text" v-model="modal.group.name" class="ios-input" style="height: 48px; border: 1px solid var(--border-color);" required>
+                    <input type="text" v-model="mpModal.group.name" class="ios-input" style="height: 48px; border: 1px solid var(--border-color);" required>
                 </div>
                 <div style="display: flex; gap: 12px; margin-bottom: 12px;">
-                    <button type="button" class="ios-btn-primary" style="background: transparent; color: var(--text-main); border: 1px solid var(--border-color); height: 52px; flex: 1;" @click="modal.group.show = false">取消</button>
-                    <button type="submit" class="ios-btn-primary" style="height: 52px; flex: 1;">保存</button>
+                    <button type="button" class="ios-btn-primary ios-btn-secondary" style="flex: 1;" @click="mpModal.group.show = false">取消</button>
+                    <button type="submit" class="ios-btn-primary" style="flex: 1;">保存</button>
                 </div>
             </form>
             <button class="ios-btn-primary ios-btn-danger" style="height: 52px;" @click="deleteGroup">
@@ -484,231 +640,374 @@
         </div>
     </div>
 
+    <div class="custom-modal-overlay" :class="{active: templatePromptModal.show}" :style="{display: templatePromptModal.show ? 'flex' : 'none'}">
+        <div class="pop-in" style="border: 2px solid var(--primary);">
+            <h5 style="font-weight:bold; margin:0 0 16px 0; font-size: 18px; display: flex; align-items: center; color: var(--text-main);">
+                <ion-icon name="bulb" style="color: var(--ios-orange); margin-right: 8px; font-size: 24px;"></ion-icon>发现新日志格式！
+            </h5>
+            <div style="color: var(--text-sub); font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
+                终端正在上报 <span style="font-weight: bold; color: var(--primary);">{{ templatePromptModal.detectedName }}</span> 的数据。<br><br>
+                当前面板为 <span style="font-weight: bold; color: var(--text-main);">{{ templatePromptModal.currentName }}</span>，是否切换视图？
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button class="ios-btn-primary ios-btn-secondary" style="flex: 1;" @click="ignoreTemplatePrompt">忽略</button>
+                <button class="ios-btn-primary" style="flex: 1;" @click="acceptTemplatePrompt">切换视图</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="custom-modal-overlay" :class="{active: lpSettingsModal.show}" :style="{display: lpSettingsModal.show ? 'flex' : 'none'}" @click="lpSettingsModal.show = false">
+        <div class="pop-in" @click.stop>
+            <h5 style="font-weight:bold; margin:0 0 20px 0; font-size: 20px;">数据视图切换</h5>
+            <div style="margin-bottom: 24px;">
+                <label style="font-size:12px; color:var(--text-sub); font-weight: 600; display: block; margin-bottom: 6px;">选择终端业务类型</label>
+                <select class="ios-select" style="border: 1px solid var(--border-color);" v-model="lpSettingsModal.templateId">
+                    <option v-for="t in availableTemplates" :value="t.id">{{ t.name }}</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button class="ios-btn-primary ios-btn-secondary" style="flex: 1;" @click="lpSettingsModal.show = false">取消</button>
+                <button class="ios-btn-primary" style="flex: 1;" @click="saveNodeSettings">确认查看</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="custom-modal-overlay" :class="{active: userFilterModal.show}" :style="{display: userFilterModal.show ? 'flex' : 'none'}" @click="userFilterModal.show = false">
+        <div class="pop-in" @click.stop style="max-height: 80vh; display: flex; flex-direction: column;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:16px; align-items: center; flex-shrink: 0;">
+                <h5 style="font-weight:bold; margin:0; font-size: 20px;">历史深度查询</h5>
+                <ion-icon name="close-circle" style="font-size:28px; color:var(--text-sub); cursor:pointer;" @click="userFilterModal.show = false"></ion-icon>
+            </div>
+            
+            <div style="background: rgba(0,122,255,0.08); color: var(--primary); border-radius: 12px; padding: 12px; text-align: center; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 16px; flex-shrink: 0;" @click="userFilterModal.showAdvanced = !userFilterModal.showAdvanced">
+                <ion-icon :name="userFilterModal.showAdvanced ? 'chevron-up-outline' : 'options-outline'" style="margin-right: 4px; vertical-align: text-bottom;"></ion-icon>
+                {{ userFilterModal.showAdvanced ? '收起高级筛选' : '高级筛选 (时间 / 搜索)' }}
+            </div>
+
+            <div v-show="userFilterModal.showAdvanced" style="background: var(--app-bg); border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border-color); flex-shrink: 0; width: 100%; box-sizing: border-box;">
+                <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; box-sizing: border-box;">
+                    <input type="text" class="ios-input" style="height: 44px; width: 100%; border: 1px solid var(--border-color); padding: 0 12px; box-sizing: border-box;" placeholder="起始时间 (可选)" onfocus="this.type='datetime-local'" onblur="if(!this.value) this.type='text'" v-model="userFilterModal.startDate">
+                    <input type="text" class="ios-input" style="height: 44px; width: 100%; border: 1px solid var(--border-color); padding: 0 12px; box-sizing: border-box;" placeholder="结束时间 (可选)" onfocus="this.type='datetime-local'" onblur="if(!this.value) this.type='text'" v-model="userFilterModal.endDate">
+                    <div style="display: flex; gap: 10px; align-items: center; width: 100%; box-sizing: border-box;">
+                        <div class="ios-search-bar" style="margin: 0; flex: 1; min-width: 0; height: 44px; border: 1px solid var(--border-color); background: var(--card-bg); padding: 0 12px; box-sizing: border-box;">
+                            <ion-icon name="search" class="ios-search-icon" style="flex-shrink: 0;"></ion-icon>
+                            <input type="text" class="ios-search-input" style="flex: 1; min-width: 0; padding: 0; height: 100%; box-sizing: border-box;" placeholder="模糊搜索..." v-model="userFilterModal.searchText" @keyup.enter="executeSearch">
+                            <ion-icon name="close-circle" style="color:var(--text-sub); font-size:16px; opacity:0.6; cursor: pointer; flex-shrink: 0;" v-show="userFilterModal.searchText" @click="userFilterModal.searchText = ''"></ion-icon>
+                        </div>
+                        <button class="ios-btn-primary" style="width: 72px; padding: 0; height: 44px; border-radius: 12px; flex-shrink: 0; margin: 0; box-sizing: border-box;" @click="executeSearch">查询</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="font-size: 12px; color: var(--text-sub); font-weight: bold; margin-bottom: 8px; flex-shrink: 0;">快捷名单点击</div>
+            <div style="flex: 1; overflow-y: auto; padding-right: 4px; margin: 0 -12px; padding-left: 12px;">
+                <div v-if="userFilterModal.loading" style="text-align: center; padding: 30px 0; color: var(--text-sub);">加载中...</div>
+                <div v-else-if="filteredUserList.length === 0" style="text-align: center; padding: 30px 0; color: var(--text-sub);">无匹配</div>
+                <div v-for="user in filteredUserList" :key="user" class="item-row" style="padding: 12px 12px 12px 0;" @click="applyUserFilter(user)">
+                    <span style="font-weight: 500; color: var(--text-main);">{{ hideNicknames ? '***' : user }}</span>
+                    <ion-icon name="chevron-forward" style="font-size: 16px; color: var(--text-sub);"></ion-icon>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="custom-modal-overlay" :class="{active: lpEditModal.show}" :style="{display: lpEditModal.show ? 'flex' : 'none'}" @click="lpEditModal.show = false">
+        <div class="pop-in" @click.stop>
+            <h5 style="font-weight:bold; margin:0 0 20px 0; font-size: 20px;">修正历史记录</h5>
+            <div style="margin-bottom:16px;">
+                <label style="font-size:12px; color:var(--text-sub); font-weight: 600; display: block; margin-bottom: 6px;">日期</label>
+                <input class="ios-input" style="border: 1px solid var(--border-color); opacity: 0.7;" v-model="lpEditModal.data.field1" disabled>
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="font-size:12px; color:var(--text-sub); font-weight: 600; display: block; margin-bottom: 6px;">总收益修正</label>
+                <input type="number" class="ios-input" style="border: 1px solid var(--border-color);" v-model.number="lpEditModal.data.field2">
+            </div>
+            <div style="margin-bottom:24px;">
+                <label style="font-size:12px; color:var(--text-sub); font-weight: 600; display: block; margin-bottom: 6px;">参与账号数量</label>
+                <input type="number" class="ios-input" style="border: 1px solid var(--border-color);" v-model.number="lpEditModal.data.field3">
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button class="ios-btn-primary ios-btn-secondary" style="flex: 1;" @click="lpEditModal.show = false">取消</button>
+                <button class="ios-btn-primary" style="flex: 1;" @click="saveLpEdit">保存覆盖</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="custom-modal-overlay" :class="{active: lpAuthModal.show}" :style="{display: lpAuthModal.show ? 'flex' : 'none'}">
+        <div class="pop-in" style="border: 2px solid var(--primary);">
+            <h5 style="font-weight:bold; margin:0 0 20px 0; font-size: 20px; color: var(--text-main); display: flex; align-items: center;">
+                <ion-icon name="lock-closed" style="margin-right: 8px; color: var(--primary);"></ion-icon>终端已加密
+            </h5>
+            <div style="margin-bottom:16px;">
+                <input type="password" class="ios-input" style="border: 1.5px solid var(--border-color); text-align: center; letter-spacing: 2px;" v-model="lpAuthModal.password" placeholder="输入访问密码" @keyup.enter="confirmPassword">
+            </div>
+            <div style="margin-bottom:24px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;" @click="lpAuthModal.remember = !lpAuthModal.remember">
+                <div style="width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--primary); display: flex; align-items: center; justify-content: center; background: var(--app-bg);">
+                    <ion-icon name="checkmark" style="color: var(--primary); font-size: 16px;" v-show="lpAuthModal.remember"></ion-icon>
+                </div>
+                <span style="font-size: 13px; color: var(--text-sub);">在此设备记住密码</span>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button class="ios-btn-primary ios-btn-secondary" style="flex: 1;" @click="lpAuthModal.show = false">取消</button>
+                <button class="ios-btn-primary" style="flex: 1;" @click="confirmPassword">解锁进入</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="custom-modal-overlay" :class="{active: historyLogsModal.show}" :style="{display: historyLogsModal.show ? 'flex' : 'none'}" @click="historyLogsModal.show = false">
+        <div class="pop-in" @click.stop style="max-width: 600px; height: 85vh; display: flex; flex-direction: column; padding: 20px 10px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:12px; align-items: center; padding: 0 10px; flex-shrink: 0;">
+                <h5 style="font-weight:bold; margin:0; font-size: 18px;">{{ historyLogsModal.date }} 产出快照</h5>
+                <ion-icon name="close-circle" style="font-size:28px; color:var(--text-sub); cursor:pointer;" @click="historyLogsModal.show = false"></ion-icon>
+            </div>
+            <div style="flex: 1; overflow-y: auto; padding: 0 10px;">
+                <div v-if="historyLogsModal.loading" style="text-align: center; padding: 40px 0; color: var(--text-sub);">加载中...</div>
+                <div v-else-if="historyLogsModal.logs.length === 0" style="text-align: center; padding: 40px 0; color: var(--text-sub);">无产出数据</div>
+                <div v-else>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color); color: var(--text-sub); font-size: 12px; font-weight: bold; position: sticky; top: 0; background: var(--card-bg); z-index: 1;">
+                        <div style="display: flex; align-items: center;">用户 / 时间 <ion-icon :name="hideNicknames ? 'eye-off-outline' : 'eye-outline'" style="font-size: 14px; margin-left: 6px; cursor: pointer;" @click="hideNicknames = !hideNicknames"></ion-icon></div>
+                        <div>详情</div>
+                    </div>
+                    <div class="item-row" v-for="(log, idx) in historyLogsModal.logs" :key="idx" style="padding: 12px 0;">
+                        <div style="flex: 1; overflow: hidden; padding-right: 12px;">
+                            <div style="font-weight: 500; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ hideNicknames ? '***' : log.nickname }}</div>
+                            <div style="font-size: 11px; color: var(--text-sub); margin-top: 4px;">
+                                {{ formatShortDate(log.log_time) }}
+                                <span v-if="log.item_type && log.item_type !== '钻石'">| {{ log.item_type }}</span>
+                            </div>
+                        </div>
+                        <div style="font-size: 16px; font-weight: bold; color: var(--primary);">
+                            {{ log.item_type === '钻石' ? log.quantity : '实物' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="custom-modal-overlay" :class="{active: pwaModal.show}" :style="{display: pwaModal.show ? 'flex' : 'none'}" @click="pwaModal.show = false">
+        <div class="pop-in" @click.stop style="text-align: center;">
+            <ion-icon name="share-outline" style="font-size: 48px; color: var(--primary); margin-bottom: 16px;"></ion-icon>
+            <h3 style="margin-top:0; margin-bottom:12px; font-size:18px; font-weight: bold;">添加到桌面</h3>
+            <p style="color:var(--text-sub); font-size:14px; margin-bottom:24px; line-height:1.6; text-align: left;">
+                1. 点击 Safari 底部 <b>分享</b> 图标<br>
+                2. 下滑选择 <b>“添加到主屏幕”</b><br>
+                3. 享受全屏 0 刷新原生体验！
+            </p>
+            <button class="ios-btn-primary" @click="pwaModal.show = false" style="background: var(--app-bg); color: var(--primary); height: 48px; border-radius: 12px;">知道了</button>
+        </div>
+    </div>
+
 </div>
 {% endraw %}
 
-<div class="custom-modal-overlay" id="pwaGuideModal" onclick="closePwaGuide()">
-    <div class="pop-in" onclick="event.stopPropagation()" style="text-align: center;">
-        <ion-icon name="share-outline" style="font-size: 48px; color: var(--primary); margin-bottom: 16px;"></ion-icon>
-        <h3 style="margin-top:0; margin-bottom:12px; font-size:18px;">如何添加到主屏幕？</h3>
-        <p style="color:var(--text-sub); font-size:14px; margin-bottom:24px; line-height:1.6; text-align: left;">
-            1. 点击屏幕下方菜单栏的 <b>分享</b> 图标<br>
-            2. 在弹出的菜单中下滑，选择 <b>“添加到主屏幕”</b><br>
-            3. 在右上角点击 <b>“添加”</b> 即可完成！
-        </p>
-        <button class="ios-btn-primary" onclick="closePwaGuide()" style="height: 48px; box-shadow:none;">我知道了</button>
-    </div>
-</div>
-
 <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
-    }
-    function showPwaGuide() {
-        if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
-            alert("当前已经是独立 PWA 应用啦！🎉"); return;
-        }
-        document.getElementById('pwaGuideModal').style.display = 'flex';
-        setTimeout(() => document.getElementById('pwaGuideModal').classList.add('active'), 10);
-    }
-    function closePwaGuide() {
-        document.getElementById('pwaGuideModal').classList.remove('active');
-        setTimeout(() => document.getElementById('pwaGuideModal').style.display = 'none', 200);
-    }
+    if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js')); }
 
     const { createApp, ref, computed, onMounted } = Vue;
 
     createApp({
         setup() {
-            const activeTab = ref(new URLSearchParams(window.location.search).get('tab') || 'overview');
-            const records = ref([]);
-            const items = ref([]);
-            const settings = ref({ interval_hours: 72, bark_url: '', bark_title: '', bark_body: '' });
-            
+            const activeTab = ref(new URLSearchParams(window.location.search).get('tab') || 'mp_overview');
             const nowTime = ref(new Date()); 
-            const isSubmitting = ref(false);
-            const testingBark = ref(false);
-            const logMode = ref('normal');
 
-            const form = ref({ date: '', group: '', quantity: '' });
-            const settingsForm = ref({ newItemName: '', interval_hours: 72, bark_url: '', bark_title: '', bark_body: '' });
-            
-            const modal = ref({
-                log: { show: false, id: null, date: '', value: '' },
-                group: { show: false, id: null, name: '' }
-            });
-
-            const isDesktop = ref(window.innerWidth >= 768);
-            window.addEventListener('resize', () => isDesktop.value = window.innerWidth >= 768);
-
-            const getLocalISOTime = () => {
-                const d = new Date();
-                d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-                return d.toISOString().slice(0, 16);
-            };
-
-            const fetchData = async () => {
-                try {
-                    const res = await axios.get('/api/data');
-                    records.value = res.data.records;
-                    items.value = res.data.items;
-                    settings.value = res.data.settings;
-                    
-                    settingsForm.value.interval_hours = settings.value.interval_hours;
-                    settingsForm.value.bark_url = settings.value.bark_url;
-                    settingsForm.value.bark_title = settings.value.bark_title;
-                    settingsForm.value.bark_body = settings.value.bark_body;
-
-                    if (items.value.length > 0 && !form.value.group) form.value.group = items.value[0].name;
-                } catch (e) {
-                    console.error("Fetch Data Error:", e);
+            // PWA 组件绑定
+            const pwaModal = ref({ show: false });
+            const showPwaGuide = () => {
+                if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
+                    alert("当前已经是独立 PWA 应用啦！🎉"); return;
                 }
+                pwaModal.value.show = true;
             };
 
-            onMounted(() => {
-                form.value.date = getLocalISOTime();
-                fetchData();
-                setInterval(() => { nowTime.value = new Date(); }, 10000); 
-            });
+            // === Matrix ===
+            const mpRecords = ref([]); const mpItems = ref([]); const mpSettings = ref({ interval_hours: 72, bark_url: '', bark_title: '', bark_body: '' });
+            const isSubmitting = ref(false); const testingBark = ref(false); const mpLogMode = ref('normal');
+            const mpForm = ref({ date: '', group: '', quantity: '' }); const settingsForm = ref({ newItemName: '', interval_hours: 72, bark_url: '', bark_title: '', bark_body: '' });
+            const mpModal = ref({ log: { show: false, id: null, date: '', value: '' }, group: { show: false, id: null, name: '' } });
+            
+            const showAddRecord = ref(false);
+
+            // === Little ===
+            const lpStats = ref({ process_status: "未知", current_template: "default", detected_template: "", total_users: 0, total_wins: 0, total_physical_wins: 0, rank_list: [], details: [], history_data: [], date_range: "" });
+            const searchText = ref(""); const searchType = ref("nick"); const filterSmallPacks = ref(false);
+            const lpEditModal = ref({ show: false, data: { field1: '', field2: 0, field3: 0 } });
+            const lpAuthModal = ref({ show: false, password: "", remember: false, targetNode: null }); 
+            const historyLogsModal = ref({ show: false, loading: false, date: "", logs: [] });
+            const historyFilterUser = ref(""); const historyFilterTotal = ref(0); const historyFilterDateRange = ref("");
+            const userFilterModal = ref({ show: false, showAdvanced: false, loading: false, users: [], searchText: "", startDate: "", endDate: "" });
+            const availableTemplates = ref([]); const lpSettingsModal = ref({ show: false, templateId: "default" });
+            const templatePromptModal = ref({ show: false, detectedId: "", detectedName: "", currentName: "" });
+            const ignoredTemplatePrompt = ref(""); const alertedTemplateError = ref(false); 
+            const hideNicknames = ref(false); const hideHistory = ref(false);
+            const nodeList = ref([]); const curNodeId = ref(""); const curNodeName = ref("");
+            const curPassword = ref(""); const isAuthError = ref(false);
+            const expandedDates = ref({}); 
+
+            const getLocalISOTime = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
+            const formatShortDate = (dateStr) => { if (!dateStr) return ''; const cleanStr = dateStr.trim(); const parts = cleanStr.split(' '); if (parts.length >= 2) { return `${parts[0].replace(/-/g, '/').substring(5)} ${parts[1].substring(0, 5)}`; } return cleanStr; };
 
             const switchTab = (tab) => {
-                activeTab.value = tab;
-                window.scrollTo(0, 0);
-                const url = new URL(window.location);
-                url.searchParams.set('tab', tab);
-                window.history.replaceState({}, '', url);
+                activeTab.value = tab; window.scrollTo(0, 0);
+                const url = new URL(window.location); url.searchParams.set('tab', tab); window.history.replaceState({}, '', url);
             };
 
-            const nextRoundPreview = computed(() => {
-                if (!form.value.date) return '--';
-                const d = new Date(form.value.date);
-                d.setHours(d.getHours() + parseInt(settings.value.interval_hours));
-                if (isNaN(d)) return '--';
-                return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+            const fetchMpData = async () => {
+                try {
+                    const res = await axios.get('/api/data');
+                    mpRecords.value = res.data.records; mpItems.value = res.data.items; mpSettings.value = res.data.settings;
+                    settingsForm.value.interval_hours = mpSettings.value.interval_hours;
+                    settingsForm.value.bark_url = mpSettings.value.bark_url;
+                    settingsForm.value.bark_title = mpSettings.value.bark_title;
+                    settingsForm.value.bark_body = mpSettings.value.bark_body;
+                    if (mpItems.value.length > 0 && !mpForm.value.group) mpForm.value.group = mpItems.value[0].name;
+                } catch (e) {}
+            };
+
+            const mpAddRecord = async () => {
+                isSubmitting.value = true; await axios.post('/api/record', mpForm.value); await fetchMpData();
+                mpForm.value.quantity = ''; mpForm.value.date = getLocalISOTime(); isSubmitting.value = false;
+                showAddRecord.value = false; 
+            };
+
+            const toggleMpLogMode = (m) => { mpLogMode.value = mpLogMode.value === m ? 'normal' : m; };
+            const handleMpLogClick = async (e, r) => {
+                if (mpLogMode.value === 'edit') { e.preventDefault(); mpModal.value.log = { show: true, id: r.id, date: r.date.replace(' ', 'T'), value: r.quantity }; } 
+                else if (mpLogMode.value === 'delete') { e.preventDefault(); if (confirm('⚠️ 确定彻底删除？')) { await axios.delete(`/api/record/${r.id}`); fetchMpData(); } }
+            };
+
+            const saveMpLogEdit = async () => { await axios.put(`/api/record/${mpModal.value.log.id}`, { date: mpModal.value.log.date, value: mpModal.value.log.value }); mpModal.value.log.show = false; fetchMpData(); mpLogMode.value = 'normal'; };
+
+            const saveSettings = async (actionStr) => {
+                const payload = { action: actionStr };
+                if (actionStr === 'add_item') { payload.name = settingsForm.value.newItemName; settingsForm.value.newItemName = ''; } 
+                else if (actionStr === 'update_interval') { payload.interval_hours = settingsForm.value.interval_hours; } 
+                else if (actionStr === 'update_bark') { payload.bark_url = settingsForm.value.bark_url; payload.bark_title = settingsForm.value.bark_title; payload.bark_body = settingsForm.value.bark_body; } 
+                else if (actionStr === 'edit_item') { payload.id = mpModal.value.group.id; payload.name = mpModal.value.group.name; mpModal.value.group.show = false; }
+                await axios.post('/api/settings', payload); fetchMpData();
+            };
+
+            const openGroupModal = (item) => { mpModal.value.group = { show: true, id: item.id, name: item.name }; };
+            const deleteGroup = async () => { if (confirm('⚠️ 彻底删除该分组？不可恢复！')) { await axios.post('/api/settings', { action: 'delete_item', id: mpModal.value.group.id }); mpModal.value.group.show = false; fetchMpData(); } };
+            const testBark = async () => { testingBark.value = true; try { const res = await axios.post('/api/test_bark', settingsForm.value); alert(res.data.msg); } catch (e) { alert(e.response?.data?.error || "请求失败"); } testingBark.value = false; };
+
+            const mpNextRoundPreview = computed(() => {
+                if (!mpForm.value.date) return '--'; const d = new Date(mpForm.value.date); d.setHours(d.getHours() + parseInt(mpSettings.value.interval_hours));
+                if (isNaN(d)) return '--'; return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+            });
+            const mpNextRoundPreviewT = computed(() => {
+                if (!mpForm.value.date) return ''; const d = new Date(mpForm.value.date); d.setHours(d.getHours() + parseInt(mpSettings.value.interval_hours));
+                if (isNaN(d)) return ''; return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + 'T' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
             });
 
-            const totalQuantity = computed(() => records.value.reduce((sum, r) => sum + parseInt(r.quantity || 0), 0));
-            
-            const latestRecordIds = computed(() => {
-                const latest = new Set();
-                const seenGroups = new Set();
-                records.value.forEach(r => {
-                    if (!seenGroups.has(r.group)) {
-                        seenGroups.add(r.group);
-                        latest.add(r.id);
-                    }
-                });
-                return latest;
-            });
-
-            const warningCount = computed(() => {
-                let count = 0;
-                records.value.forEach(r => {
-                    if (latestRecordIds.value.has(r.id) && r.next_time && r.next_time !== '--') {
-                        const target = new Date(r.next_time.replace(' ', 'T') + ':00');
-                        if (target <= nowTime.value) count++;
-                    }
-                });
-                return count;
-            });
-
-            const getRecordStatusHtml = (r) => {
-                if (!latestRecordIds.value.has(r.id)) {
-                    return `<div style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-top: 2px;">本轮结束：${r.date}</div>`;
-                }
+            const mpTotalQuantity = computed(() => mpRecords.value.reduce((sum, r) => sum + parseInt(r.quantity || 0), 0));
+            const mpLatestRecordIds = computed(() => { const latest = new Set(); const seen = new Set(); mpRecords.value.forEach(r => { if (!seen.has(r.group)) { seen.add(r.group); latest.add(r.id); } }); return latest; });
+            const mpWarningCount = computed(() => { let count = 0; mpRecords.value.forEach(r => { if (mpLatestRecordIds.value.has(r.id) && r.next_time && r.next_time !== '--') { if (new Date(r.next_time.replace(' ', 'T') + ':00') <= nowTime.value) count++; } }); return count; });
+            const getMpRecordStatusHtml = (r) => {
+                if (!mpLatestRecordIds.value.has(r.id)) return `<div style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-top: 2px;">本轮结束：${r.date}</div>`;
                 if (r.next_time && r.next_time !== '--') {
-                    const target = new Date(r.next_time.replace(' ', 'T') + ':00');
-                    if (target > nowTime.value) {
-                        return `<div style="font-size: 12px; color: var(--success); font-weight: 600; margin-top: 2px;">预计下轮：${r.next_time}</div>`;
-                    } else {
-                        return `<div style="font-size: 12px; color: var(--ios-orange); font-weight: 600; margin-top: 2px;">上号预警：${r.next_time}</div>`;
-                    }
+                    if (new Date(r.next_time.replace(' ', 'T') + ':00') > nowTime.value) return `<div style="font-size: 12px; color: var(--success); font-weight: 600; margin-top: 2px;">预计下轮：${r.next_time}</div>`;
+                    else return `<div style="font-size: 12px; color: var(--ios-orange); font-weight: 600; margin-top: 2px;">上号预警：${r.next_time}</div>`;
                 }
                 return `<div style="font-size: 12px; color: var(--text-sub); font-weight: 500; margin-top: 2px;">本轮结束：${r.date}</div>`;
             };
 
-            const addRecord = async () => {
-                isSubmitting.value = true;
-                await axios.post('/api/record', form.value);
-                await fetchData();
-                form.value.quantity = ''; 
-                form.value.date = getLocalISOTime(); 
-                isSubmitting.value = false;
+            const loadTemplates = async () => { try { const res = await axios.get('/api/templates'); availableTemplates.value = res.data.templates || []; } catch(e) {} };
+            const loadNodes = async () => {
+                try {
+                    const res = await axios.get('/api/nodes'); nodeList.value = res.data.nodes;
+                    if ((!curNodeId.value) && nodeList.value.length > 0) {
+                        const target = nodeList.value.find(n => n.device_id === localStorage.getItem('last_node_id')) || nodeList.value[0];
+                        selectNode(target); 
+                    }
+                } catch(e) {}
             };
-
-            const toggleLogMode = (m) => { logMode.value = logMode.value === m ? 'normal' : m; };
-
-            const handleLogClick = async (e, r) => {
-                if (logMode.value === 'edit') {
-                    e.preventDefault();
-                    modal.value.log = { show: true, id: r.id, date: r.date.replace(' ', 'T'), value: r.quantity };
-                } else if (logMode.value === 'delete') {
-                    e.preventDefault();
-                    if (confirm('⚠️ 确定彻底删除？')) {
-                        await axios.delete(`/api/record/${r.id}`);
-                        fetchData();
+            const selectNode = (node) => {
+                isAuthError.value = false; alertedTemplateError.value = false; ignoredTemplatePrompt.value = ""; templatePromptModal.value.show = false;
+                localStorage.setItem('last_node_id', node.device_id); curNodeId.value = node.device_id; curNodeName.value = node.nickname;
+                clearUserFilter(); const savedPass = localStorage.getItem(`pwd_${node.device_id}`);
+                if (node.has_password) {
+                    if (savedPass) { curPassword.value = savedPass; loadLpData(); } 
+                    else { curPassword.value = ""; lpAuthModal.value.targetNode = node; lpAuthModal.value.password = ""; lpAuthModal.value.remember = false; lpAuthModal.value.show = true; lpStats.value = { process_status: "🔒 无权限", total_users: 0, total_wins: 0, total_physical_wins: 0, rank_list: [], details: [], history_data: [], date_range: "" }; }
+                } else { curPassword.value = ""; loadLpData(); }
+            };
+            const confirmPassword = () => {
+                curPassword.value = lpAuthModal.value.password;
+                if (lpAuthModal.value.remember && lpAuthModal.value.targetNode) localStorage.setItem(`pwd_${lpAuthModal.value.targetNode.device_id}`, lpAuthModal.value.password);
+                lpAuthModal.value.show = false; isAuthError.value = false; loadLpData();
+            };
+            const deleteNode = async (node) => {
+                if(!confirm(`确定删除终端 "${node.nickname}" 吗？\n删除后如继续挂机则会自动恢复。`)) return;
+                try { await axios.post('/api/node/delete', { device_id: node.device_id }); if (curNodeId.value === node.device_id) { curNodeId.value = ""; localStorage.removeItem('last_node_id'); } await loadNodes(); } catch(e) { alert("删除失败"); }
+            };
+            const loadLpData = async () => {
+                if (!curNodeId.value) return;
+                try {
+                    const res = await axios.get(`/api/stats?node_id=${encodeURIComponent(curNodeId.value)}&password=${encodeURIComponent(curPassword.value)}`);
+                    lpStats.value = res.data; isAuthError.value = false;
+                    const detected = lpStats.value.detected_template; const current = lpStats.value.current_template;
+                    if (detected && detected !== current) {
+                        if (detected !== ignoredTemplatePrompt.value && !templatePromptModal.value.show && availableTemplates.value.length > 0) {
+                            templatePromptModal.value = { show: true, detectedId: detected, detectedName: availableTemplates.value.find(t => t.id === detected)?.name || detected, currentName: availableTemplates.value.find(t => t.id === current)?.name || current };
+                        }
+                    }
+                } catch(e) {
+                    if (e.response && e.response.status === 403) {
+                        lpStats.value = { process_status: "🔒 无权限", total_users: 0, total_wins: 0, total_physical_wins: 0, rank_list: [], details: [], history_data: [], date_range: "" };
+                        if (!isAuthError.value) {
+                            alert("密码错误，请重新输入"); isAuthError.value = true; curPassword.value = ""; localStorage.removeItem(`pwd_${curNodeId.value}`);
+                            const node = nodeList.value.find(n => n.device_id === curNodeId.value); if (node) { lpAuthModal.value.targetNode = node; lpAuthModal.value.password = ""; lpAuthModal.value.show = true; }
+                        }
                     }
                 }
             };
-
-            const saveLogEdit = async () => {
-                await axios.put(`/api/record/${modal.value.log.id}`, { date: modal.value.log.date, value: modal.value.log.value });
-                modal.value.log.show = false;
-                fetchData();
-                logMode.value = 'normal';
+            const ignoreTemplatePrompt = () => { ignoredTemplatePrompt.value = templatePromptModal.value.detectedId; templatePromptModal.value.show = false; };
+            const acceptTemplatePrompt = async () => { try { await axios.post('/api/set_template', { node_id: curNodeId.value, template_id: templatePromptModal.value.detectedId }); templatePromptModal.value.show = false; ignoredTemplatePrompt.value = ""; alertedTemplateError.value = false; clearUserFilter(); loadLpData(); } catch(e) { alert("切换视图失败"); } };
+            const openNodeSettings = () => { if (!curNodeId.value) return; lpSettingsModal.value.templateId = lpStats.value.current_template || "default"; lpSettingsModal.value.show = true; };
+            const saveNodeSettings = async () => { try { await axios.post('/api/set_template', { node_id: curNodeId.value, template_id: lpSettingsModal.value.templateId }); lpSettingsModal.value.show = false; alertedTemplateError.value = false; ignoredTemplatePrompt.value = ""; clearUserFilter(); loadLpData(); } catch(e) { alert("保存设置失败"); } };
+            const resetRound = async () => { if (!curNodeId.value) return; if (!confirm("确认重置本轮？\n当前大屏数据将清零重算，不影响历史记录。")) return; try { await axios.post('/api/reset_round', { device_id: curNodeId.value }); await loadLpData(); } catch(e) { alert("重置失败"); } };
+            const openUserFilter = async () => {
+                if (!curNodeId.value) return; userFilterModal.value.show = true; userFilterModal.value.showAdvanced = false; userFilterModal.value.loading = true; userFilterModal.value.searchText = ""; userFilterModal.value.users = [];
+                try { const res = await axios.get(`/api/user_total?node_id=${curNodeId.value}`); userFilterModal.value.users = res.data.users || []; } catch (e) {} finally { userFilterModal.value.loading = false; }
             };
+            const filteredUserList = computed(() => { const raw = userFilterModal.value.searchText.trim().toLowerCase(); if (!raw) return userFilterModal.value.users; return userFilterModal.value.users.filter(u => u.toLowerCase().includes(raw)); });
+            const executeSearch = () => { const raw = userFilterModal.value.searchText.trim(); if (!raw) { if (!userFilterModal.value.startDate && !userFilterModal.value.endDate) { alert("全节点查询请至少设置时间范围！"); return; } queryAllUsers(); } else { applyUserFilter(raw); } };
+            const queryAllUsers = async () => { historyFilterUser.value = "【全节点时段总和】"; userFilterModal.value.show = false; historyFilterTotal.value = "..."; let ds = userFilterModal.value.startDate; let de = userFilterModal.value.endDate; let query = `/api/user_total?node_id=${curNodeId.value}&calc_all=1`; if (ds) query += `&start_date=${ds}`; if (de) query += `&end_date=${de}`; historyFilterDateRange.value = `${ds ? ds.replace('T', ' ') : '最早期'} 至 ${de ? de.replace('T', ' ') : '最新'}`; try { const res = await axios.get(query); historyFilterTotal.value = res.data.total || 0; } catch (e) { historyFilterTotal.value = 0; } };
+            const applyUserFilter = async (nickname) => { historyFilterUser.value = nickname; userFilterModal.value.show = false; historyFilterTotal.value = "..."; let ds = userFilterModal.value.startDate; let de = userFilterModal.value.endDate; let query = `/api/user_total?node_id=${curNodeId.value}&nickname=${encodeURIComponent(nickname)}`; if (ds) query += `&start_date=${ds}`; if (de) query += `&end_date=${de}`; if (!ds && !de) historyFilterDateRange.value = "所有时间"; else historyFilterDateRange.value = `${ds ? ds.replace('T', ' ') : '早期'} 至 ${de ? de.replace('T', ' ') : '最新'}`; try { const res = await axios.get(query); historyFilterTotal.value = res.data.total || 0; } catch (e) { historyFilterTotal.value = 0; } };
+            const clearUserFilter = () => { historyFilterUser.value = ""; historyFilterTotal.value = 0; };
+            const viewHistoryLogs = async (date) => { historyLogsModal.value.date = date; historyLogsModal.value.show = true; historyLogsModal.value.loading = true; historyLogsModal.value.logs = []; try { const res = await axios.get(`/api/history_logs?node_id=${curNodeId.value}&date=${date}`); historyLogsModal.value.logs = res.data.logs; } catch(e) {} finally { historyLogsModal.value.loading = false; } };
+            const getStatusText = (status) => { if (!status) return '未知'; if (status === '运行中') return '运行'; if (status === '未运行') return '在线'; if (status === '离线' || status === '未连接') return '离线'; if (status.includes('无权限')) return '加密'; if (status === '模板错误') return '模板错'; return status; };
+            const getStatusTypeClass = (status) => { if (!status) return 'status-offline'; if (status === '运行中') return 'status-running'; if (status === '未运行') return 'status-standby'; if (status === '离线' || status === '未连接') return 'status-offline'; if (status.includes('无权限')) return 'status-warning'; if (status === '模板错误') return 'status-error'; return 'status-offline'; };
+            const filteredDetails = computed(() => { if(!lpStats.value.details) return []; const rawSearch = searchText.value.trim(); return lpStats.value.details.filter(i => { if (filterSmallPacks.value && i.quantity < 24) return false; if (!rawSearch) return true; if (searchType.value === 'nick') return i.nickname.replace(/\s+/g, '').toLowerCase().includes(rawSearch.replace(/\s+/g, '').toLowerCase()); else return i.log_time.substring(0, 10).replace(/\D/g, '').includes(rawSearch.replace(/\D/g, '')); }); });
+            const filteredTotal = computed(() => { return filteredDetails.value.reduce((sum, item) => sum + item.quantity, 0); });
+            const handleLpHistoryEdit = (dayData) => { lpEditModal.value.data = { field1: dayData.date, field2: dayData.daily_sum, field3: dayData.user_count }; lpEditModal.value.show = true; };
+            const saveLpEdit = async () => { try { await axios.post('/api/update_history', { date: lpEditModal.value.data.field1, device_id: curNodeId.value, manual_sum: lpEditModal.value.data.field2, manual_users: lpEditModal.value.data.field3 }); lpEditModal.value.show = false; loadLpData(); } catch(e) { alert("保存失败"); } };
+            const updateExpandedState = (date, isOpen) => { expandedDates.value[date] = isOpen; };
 
-            const saveSettings = async (actionStr) => {
-                const payload = { action: actionStr };
-                if (actionStr === 'add_item') {
-                    payload.name = settingsForm.value.newItemName;
-                    settingsForm.value.newItemName = '';
-                } else if (actionStr === 'update_interval') {
-                    payload.interval_hours = settingsForm.value.interval_hours;
-                } else if (actionStr === 'update_bark') {
-                    payload.bark_url = settingsForm.value.bark_url;
-                    payload.bark_title = settingsForm.value.bark_title;
-                    payload.bark_body = settingsForm.value.bark_body;
-                } else if (actionStr === 'edit_item') {
-                    payload.id = modal.value.group.id;
-                    payload.name = modal.value.group.name;
-                    modal.value.group.show = false;
-                }
+            onMounted(async () => {
+                mpForm.value.date = getLocalISOTime();
+                fetchMpData();
+                await loadTemplates();
+                await loadNodes();
+                loadLpData();
                 
-                await axios.post('/api/settings', payload);
-                fetchData();
-            };
-
-            const openGroupModal = (item) => {
-                modal.value.group = { show: true, id: item.id, name: item.name };
-            };
-
-            const deleteGroup = async () => {
-                if (confirm('⚠️ 彻底删除该分组？不可恢复！')) {
-                    await axios.post('/api/settings', { action: 'delete_item', id: modal.value.group.id });
-                    modal.value.group.show = false;
-                    fetchData();
-                }
-            };
-
-            const testBark = async () => {
-                testingBark.value = true;
-                try {
-                    const res = await axios.post('/api/test_bark', settingsForm.value);
-                    alert(res.data.msg);
-                } catch (e) {
-                    alert(e.response?.data?.error || "请求失败");
-                }
-                testingBark.value = false;
-            };
+                setInterval(() => { 
+                    nowTime.value = new Date(); 
+                    if (activeTab.value.startsWith('mp_')) fetchMpData();
+                    let shouldLoad = true;
+                    if (lpAuthModal.value.show || lpSettingsModal.value.show || userFilterModal.value.show || templatePromptModal.value.show || pwaModal.value.show) shouldLoad = false;
+                    const node = nodeList.value.find(n => n.device_id === curNodeId.value);
+                    if (node && node.has_password && !curPassword.value) shouldLoad = false;
+                    
+                    if (curNodeId.value && shouldLoad) loadLpData(); 
+                    loadNodes(); 
+                }, 5000); 
+            });
 
             return {
-                activeTab, switchTab, isDesktop,
-                records, items, settings, form, settingsForm,
-                isSubmitting, testingBark, logMode, modal,
-                nextRoundPreview, totalQuantity, warningCount,
-                getRecordStatusHtml, addRecord, toggleLogMode, handleLogClick, saveLogEdit,
-                saveSettings, openGroupModal, deleteGroup, testBark
+                activeTab, switchTab, formatShortDate, hideNicknames, hideHistory, pwaModal, showPwaGuide,
+                mpRecords, mpItems, mpSettings, mpForm, settingsForm, isSubmitting, testingBark, mpLogMode, mpModal, mpNextRoundPreview, mpNextRoundPreviewT, mpTotalQuantity, mpWarningCount, showAddRecord, getMpRecordStatusHtml, mpAddRecord, toggleMpLogMode, handleMpLogClick, saveMpLogEdit, saveSettings, openGroupModal, deleteGroup, testBark,
+                lpStats, searchText, searchType, filterSmallPacks, filteredDetails, filteredTotal, lpEditModal, lpAuthModal, historyLogsModal, viewHistoryLogs, saveLpEdit, confirmPassword, handleLpHistoryEdit, deleteNode, nodeList, curNodeId, curNodeName, selectNode, getStatusText, getStatusTypeClass, resetRound, historyFilterUser, historyFilterTotal, historyFilterDateRange, userFilterModal, filteredUserList, openUserFilter, applyUserFilter, clearUserFilter, availableTemplates, lpSettingsModal, openNodeSettings, saveNodeSettings, executeSearch, templatePromptModal, ignoreTemplatePrompt, acceptTemplatePrompt, expandedDates, updateExpandedState
             };
         }
     }).mount('#app');

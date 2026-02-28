@@ -1,11 +1,18 @@
 version: '3.8'
+
 services:
-  matrixpilot:
-    image: ghcr.io/${GITHUB_USERNAME}/matrixpilot:latest
-    container_name: matrixpilot
+  matrix-pilot:
+    build: .
+    container_name: matrix_pilot_dev
     ports:
       - "5000:5000"
+    environment:
+      - APP_PIN=123456
+      - TZ=Asia/Shanghai
+      # 开启 Flask 开发模式，支持 Python 代码热重载
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
     volumes:
-      # 将数据库文件映射到宿主机，防止数据丢失
-      - ./matrix_pilot.db:/app/instance/matrix_pilot.db
-    restart: always
+      # 【核心魔法】将电脑当前目录(.) 挂载到容器内的 /app 目录
+      - .:/app
+    restart: unless-stopped

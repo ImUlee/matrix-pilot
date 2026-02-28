@@ -5,115 +5,185 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#f4f3f9" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
-    <title>登录 - MatrixPilot</title>
-    
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon.png') }}">
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="apple-mobile-web-app-title" content="MatrixPilot">
+    <title>MatrixPilot Manage</title>
+    
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 
     <style>
-        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; margin: 0; padding: 0; }
         
         :root {
-            --app-bg: #f4f3f9; 
-            --card-bg: #FFFFFF; 
+            --app-bg: #f2f2f7; 
+            --card-bg: rgba(255, 255, 255, 0.7); 
             --text-main: #1C1C1E; 
-            --text-sub: #A8A8A8;
-            --border-color: #e5e5ea;
+            --text-sub: #8E8E93;
+            --border-color: rgba(229, 229, 234, 0.7);
             --primary: #007AFF; 
             --danger: #FF3B30;
+            --glass-blur: blur(20px);
         }
+
         @media (prefers-color-scheme: dark) {
-            :root { 
+            :root {
                 --app-bg: #000000; 
-                --card-bg: #1C1C1E; 
-                --text-main: #FFFFFF; 
-                --border-color: #38383A;
+                --card-bg: rgba(28, 28, 30, 0.7); 
+                --text-main: #FFFFFF;
+                --border-color: rgba(56, 56, 58, 0.7);
                 --primary: #0A66C2; 
             }
         }
-        
-        body {
-            font-family: -apple-system, "SF Pro Display", sans-serif;
-            background-color: var(--app-bg); color: var(--text-main); margin: 0;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 100vh; padding: 20px;
-            -webkit-font-smoothing: antialiased;
+
+        body { 
+            font-family: -apple-system, "SF Pro Display", sans-serif; 
+            background-color: var(--app-bg); 
+            color: var(--text-main); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 20px;
+            -webkit-font-smoothing: antialiased; 
+            overflow: hidden; 
         }
+
+        @keyframes fadeInOut {
+            from { opacity: 0; transform: scale(1.05); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .login-wrapper {
+            width: 100%;
+            max-width: 320px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeInOut 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* 拟物化 Logo 外框 */
+        .logo-box {
+            width: 68px; 
+            height: 68px;
+            background: linear-gradient(135deg, #FFF 0%, #E5E5EA 100%); 
+            border-radius: 18px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 18px; 
+            box-shadow: 
+                0 6px 16px rgba(0, 0, 0, 0.06), 
+                inset 0 1px 1px #FFF, 
+                inset 0 -1px 2px rgba(0, 0, 0, 0.05);
+            border: 0.5px solid rgba(0, 0, 0, 0.04);
+            transition: all 0.3s ease;
+        }
+        @media (prefers-color-scheme: dark) {
+            .logo-box {
+                background: linear-gradient(135deg, #2C2C2E 0%, #1C1C1E 100%);
+                border-color: rgba(255, 255, 255, 0.04);
+                box-shadow: 
+                    0 6px 16px rgba(0, 0, 0, 0.15), 
+                    inset 0 1px 1px rgba(255, 255, 255, 0.05), 
+                    inset 0 -1px 2px rgba(0, 0, 0, 0.2);
+            }
+        }
+
+        /* 图片自适应填满黄金圆角 */
+        .logo-box img { 
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: inherit; /* 完美继承父级的 18px 苹果圆角 */
+        }
+
+        /* 标题排版 */
+        .title { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px; text-align: center; }
+        .subtitle { font-size: 13px; color: var(--text-sub); text-align: center; margin-bottom: 28px; font-weight: 500; letter-spacing: 0.01em;}
         
+        /* 磨砂玻璃登录卡片 */
         .login-card {
-            background: var(--card-bg); border-radius: 24px; padding: 40px 24px;
-            width: 100%; max-width: 380px; box-shadow: none; 
-            text-align: center;
+            background: var(--card-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur); 
+            width: 100%;
+            border-radius: 22px;
+            padding: 22px;
+            border: 0.5px solid var(--border-color); 
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04); 
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
         
-        /* 采用最新的 iOS 半透明弥散风格底色 */
-        .icon-container {
-            width: 72px; height: 72px; 
-            background: rgba(0, 122, 255, 0.1); 
-            color: var(--primary);
-            border-radius: 20px; display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 24px auto; box-shadow: none;
-        }
-        
-        h1 { margin: 0 0 8px 0; font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
-        p { color: var(--text-sub); font-size: 15px; margin: 0 0 32px 0; }
-        
-        /* 提升密码框的质感，输入时圆点间距更宽更优雅 */
+        /* PIN 码输入框 */
         .ios-input {
-            background: var(--app-bg); border: 1.5px solid var(--border-color); border-radius: 14px;
-            height: 54px; padding: 0 16px; font-size: 20px; font-weight: 600; color: var(--text-main);
-            width: 100%; outline: none; margin-bottom: 24px; text-align: center; letter-spacing: 0.3em;
-            transition: border-color 0.2s;
+            -webkit-appearance: none; appearance: none;
+            width: 100%; height: 50px; border-radius: 14px;
+            background: rgba(0, 0, 0, 0.03); 
+            border: 1.5px solid transparent;
+            font-size: 20px; font-weight: 700; color: var(--text-main);
+            text-align: center; letter-spacing: 8px; outline: none;
+            transition: all 0.25s ease; margin-bottom: 18px;
+            font-family: ui-rounded, "SF Pro Rounded", -apple-system, sans-serif;
         }
+        @media (prefers-color-scheme: dark) {
+            .ios-input { background: rgba(255, 255, 255, 0.03); }
+        }
+        .ios-input::placeholder { font-size: 14px; font-weight: 500; letter-spacing: normal; color: var(--text-sub); }
         
-        /* 占位符不再用点，直接用文字，并缩小字号与字间距 */
-        .ios-input::-webkit-input-placeholder { color: var(--text-sub); opacity: 0.4; font-weight: 400; letter-spacing: normal; font-size: 16px; }
-        .ios-input::-moz-placeholder { color: var(--text-sub); opacity: 0.4; font-weight: 400; letter-spacing: normal; font-size: 16px; }
-        .ios-input:-ms-input-placeholder { color: var(--text-sub); opacity: 0.4; font-weight: 400; letter-spacing: normal; font-size: 16px; }
-        .ios-input::placeholder { color: var(--text-sub); opacity: 0.4; font-weight: 400; letter-spacing: normal; font-size: 16px; }
-        
-        .ios-input:focus { border-color: var(--primary); }
-        
+        .ios-input:focus { 
+            border-color: var(--primary); 
+            background: rgba(0, 0, 0, 0.01); 
+            transform: scale(1.01); 
+        }
+        .login-card:focus-within { box-shadow: 0 15px 50px rgba(0, 122, 255, 0.05); }
+
         .ios-btn-primary { 
-            background: var(--primary); color: #FFF; border: none; border-radius: 50px; 
-            height: 54px; font-size: 17px; font-weight: 600; width: 100%; 
-            display: flex; justify-content: center; align-items: center; cursor: pointer;
-            box-shadow: none; transition: opacity 0.2s; gap: 8px;
+            background: var(--primary); color: #FFF; border: none; border-radius: 30px; 
+            height: 48px; font-size: 15px; font-weight: 600; width: 100%; 
+            cursor: pointer; transition: all 0.2s ease; display: flex; justify-content: center; align-items: center; 
         }
-        .ios-btn-primary:active { opacity: 0.8; }
+        .ios-btn-primary:active { opacity: 0.8; transform: scale(0.98); }
         
-        .error-msg { color: var(--danger); font-size: 13px; margin-top: -12px; margin-bottom: 20px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 4px; }
+        /* 错误提示 */
+        .error-msg {
+            color: var(--danger); font-size: 12px; font-weight: 600; 
+            text-align: center; margin-top: 14px;
+            display: flex; align-items: center; justify-content: center;
+            animation: shake 0.35s ease-in-out; 
+            background: rgba(255, 59, 48, 0.08);
+            padding: 8px; border-radius: 9px;
+        }
+        .error-msg ion-icon { margin-right: 5px; font-size: 14px; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-4px); } 
+            40%, 80% { transform: translateX(4px); }
+        }
     </style>
 </head>
 <body>
-    <div class="login-card">
-        
-        <div class="icon-container">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
+    <div class="login-wrapper">
+        <div class="logo-box">
+            <img src="{{ url_for('static', filename='icon.png') }}" alt="MatrixPilot Icon">
         </div>
         
-        <h1>MatrixPilot</h1>
-        <p>输入密码以解锁</p>
-        
-        <form action="/login" method="POST">
-            <input type="password" name="pin" class="ios-input" placeholder="PASSWORD" required autofocus>
+        <div class="title">MatrixPilot</div>
+        <div class="subtitle">云端看板数据中心</div>
+
+        <form class="login-card" method="POST" action="/login">
+            <input type="password" name="pin" class="ios-input" placeholder="PIN" required autofocus autocomplete="off">
+            <button type="submit" class="ios-btn-primary">Unlock</button>
             
             {% if error %}
             <div class="error-msg">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                {{ error }}
+                <ion-icon name="warning"></ion-icon> 控制密钥错误
             </div>
             {% endif %}
-            
-            <button type="submit" class="ios-btn-primary">
-                解锁
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5l7 7-7 7"></path></svg>
-            </button>
         </form>
     </div>
 </body>
